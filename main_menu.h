@@ -7,4 +7,5 @@
 #define CANCELED   6
 
 int main_menu(int xsize, int ysize);
-void putMenuOption(int x,int y,char *string,int physical_position,int position);
+void putMenuOption(int x,int y,char *string,int physical_position,int position,
+		   int greyed_out);

@@ -32,7 +32,12 @@
 #define TILE_DOOR_TEXTURE        32
 #define TILE_WINDOW_TEXTURE      33
 #define TILE_BLANK_TEXTURE       34
-#define TOTAL_TEXTURES 35
+#define ARCTIC_ROOF_TEXTURE      35
+#define ARCTIC_DOOR_TEXTURE      36
+#define ARCTIC_WINDOW_TEXTURE    37
+#define BUSHES_TEXTURE           38
+#define DISINTEGRATE_TEXTURE     39
+#define TOTAL_TEXTURES 40
 
 extern GLuint textures[];
 

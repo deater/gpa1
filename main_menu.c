@@ -10,7 +10,9 @@
 
 
 
-void putMenuOption(int x,int y,char *string,int physical_position,int position) {
+void putMenuOption(int x,int y,char *string,int physical_position,int position,
+		   int greyed_out) {
+   
        
     if (physical_position==position) {
        glColor3f(1.0,1.0,1.0);
@@ -21,6 +23,7 @@ void putMenuOption(int x,int y,char *string,int physical_position,int position) 
     else {
        glColor3f(0.5,0.0,0.0);
     }
+    if (greyed_out) glColor3f(0.33,0.0,0.0);
     glRasterPos3f(x,y,0);
     vmwGLString(string,font);
 }
@@ -47,11 +50,11 @@ int main_menu(int xsize, int ysize) {
        vmwGLString("GUINEA PIG ADVENTURE",font);
        
        
-       putMenuOption(50,125,"VIEW STORY",0,position);
-       putMenuOption(50,115,"NEW GAME",1,position);
-       putMenuOption(50,105,"LOAD SAVED GAME",2,position);
-       putMenuOption(50, 95,"CREDITS",3,position);
-       putMenuOption(50, 85,"QUIT",4,position);
+       putMenuOption(50,125,"VIEW STORY",0,position,0);
+       putMenuOption(50,115,"NEW GAME",1,position,0);
+       putMenuOption(50,105,"LOAD SAVED GAME",2,position,0);
+       putMenuOption(50, 95,"CREDITS",3,position,0);
+       putMenuOption(50, 85,"QUIT",4,position,0);
 
        glFlush();
        SDL_GL_SwapBuffers();

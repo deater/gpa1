@@ -83,7 +83,7 @@ GLubyte *vmwLoadFont(char *namest,int xsize,int ysize,int numchars,int scale)
 }
 
 
-void vmwGLString(char *st,GLubyte *font,int xsize,int ysize) {
+void vmwGLString(char *st,GLubyte *font) {
    
    int i,len;
    
@@ -93,6 +93,19 @@ void vmwGLString(char *st,GLubyte *font,int xsize,int ysize) {
 	       font_xsize+1,0.0,font+(st[i]*font_ysize*font_scale));
    }
 }
+
+   /* font value 8 is a box */
+void vmwGLShadowString(char *st,GLubyte *font) {
+   
+   int i,len;
+   
+   len=strlen(st);
+   for(i=0;i<len;i++) {
+      glBitmap(font_xsize,font_ysize,0.0,0.0,
+	       font_xsize+1,0.0,font+(8*font_ysize*font_scale));
+   }
+}
+
 
 #if 0
 

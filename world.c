@@ -23,6 +23,8 @@
 #include "terrain.h"
 
 #include "game_state.h"
+#include "battle.h"
+#include "setup_enemies.h"
 
     /* As much as I have memorized... */
 #define PI 3.141592653589793238462643383279502884197169399
@@ -48,10 +50,13 @@ float camera_direction=90*(180.0/PI),camerax=-10.0,cameray=0,cameraz=5.0;
 int turn_right=0,turn_left=0,draw_splash=0,accelerating=0;
 
    
-#define D2R(x) ((x*PI)/180.0)
+#define D2R(x) (x*(PI/180.0))
 
 
-map_element world_map[40][40];
+#define MAPSIZE_X 40
+#define MAPSIZE_Y 40
+
+map_element world_map[MAPSIZE_X][MAPSIZE_Y];
 
 
 
@@ -97,9 +102,9 @@ int in_game_menu(game_state_type *gs) {
        sprintf(tempstring,"$%d",gs->money);
        vmwGLString(tempstring,font);
        
-       putMenuOption(20,180,"CONTINUE",0,position);
-       putMenuOption(20,170,"SAVE",1,position);
-       putMenuOption(20,120,"QUIT",2,position);
+       putMenuOption(20,180,"CONTINUE",0,position,0);
+       putMenuOption(20,170,"SAVE",1,position,0);
+       putMenuOption(20,120,"QUIT",2,position,0);
 
        glFlush();
        SDL_GL_SwapBuffers();
@@ -300,16 +305,17 @@ void render_world(game_state_type *gs) {
        for(j=-distance_seen;j<=distance_seen;j++) {
 	    
 	  tempx=gs->gridx+i;
-	  if (tempx<0) tempx+=40;
-	  if (tempx>39) tempx-=40;
+	  if (tempx<0) tempx+=MAPSIZE_X;
+	  if (tempx>39) tempx-=MAPSIZE_X;
 	  tempy=gs->gridy+j;
-	  if (tempy<0) tempy+=40;
-	  if (tempy>39) tempy-=40;
+	  if (tempy<0) tempy+=MAPSIZE_Y;
+	  if (tempy>39) tempy-=MAPSIZE_Y;
 	    
 	  land_type=world_map[tempx][tempy].terrain_type;
 
 	  glPushMatrix();
-	  glTranslatef( (i*4)+2,(j*4)+2,0); 
+	    // +2 removed???
+	  glTranslatef( (i*4),(j*4),0); 
 	  glRotatef(world_map[tempx][tempy].rotation,0,0,1);
           glCallList(terrain[land_type]);
 	  
@@ -387,6 +393,14 @@ void render_world(game_state_type *gs) {
        else glCallList(spaceships[0]);
     }
     else {
+#if 0
+       glBegin(GL_QUADS);
+         glVertex3f(-1.5,0.5,1.0);
+         glVertex3f( 1.5,0.5,1.0);
+         glVertex3f( 1.5,-0.5,1.0);
+         glVertex3f(-1.5,-0.5,1.0);
+       glEnd();
+#endif
        glRotatef(90,1,0,0);
        glCallList(leonard);
     }
@@ -459,6 +473,15 @@ int handle_ss_keyboard(int keyspressed,game_state_type  *gs,float scale) {
        gs->pigx-=cos( (gs->direction*PI)/180.0)*scale;      
        accelerating=1;
     }
+
+    if (keyspressed&UP_PRESSED) {
+       gs->pigz+=1.0*scale;
+    }
+    if (keyspressed&DOWN_PRESSED) {
+       gs->pigz-=1.0*scale;
+    }
+   
+       /* After up and down so GP doesn't end up in air */
     if ((keyspressed>>16)&CONFIRM_PRESSED) {
        	     printf("TRYING TO GET OUT: %i,%i,%.2f,%.2f %i,%i,%.2f,%.2f\n",
 		    gs->gridx,gs->gridy,gs->pigx,gs->pigy,
@@ -474,13 +497,9 @@ int handle_ss_keyboard(int keyspressed,game_state_type  *gs,float scale) {
        }
        
     }
-    if (keyspressed&UP_PRESSED) {
-       gs->pigz+=1.0*scale;
-    }
-    if (keyspressed&DOWN_PRESSED) {
-       gs->pigz-=1.0*scale;
-    }
-          
+
+    if (!gs->in_spaceship) return 0;
+   
 	     /* Collision detection */
 	  
 	  
@@ -496,19 +515,19 @@ int handle_ss_keyboard(int keyspressed,game_state_type  *gs,float scale) {
 	  tempx=gs->gridx;  tempy=gs->gridy;
 	  if ((x_offset+gs->pigx)>=2.0) {
 	     tempx++;
-	     if (tempx>=40) tempx=0;
+	     if (tempx>=MAPSIZE_X) tempx=0;
 	  }
 	  if ((y_offset+gs->pigy)>=2.0) {
 	     tempy++;
-	     if (tempy>=40) tempy=0;
+	     if (tempy>=MAPSIZE_Y) tempy=0;
 	  }
 	  if ((gs->pigx-x_offset)<=-2.0) {
 	     tempx--;
-	     if (tempx<0) tempx=39;
+	     if (tempx<0) tempx=MAPSIZE_X-1;
 	  }
 	  if ((gs->pigy-y_offset)<=-2.0) {
 	     tempy--;
-	     if (tempy<0) tempy=39;
+	     if (tempy<0) tempy=MAPSIZE_Y-1;
 	  }
 	  if (gs->pigz<terrain_heights[world_map[tempx][tempy].terrain_type]+0.89) { 
 
@@ -523,19 +542,19 @@ int handle_ss_keyboard(int keyspressed,game_state_type  *gs,float scale) {
 	  tempx=gs->gridx;  tempy=gs->gridy;
 	  if ((gs->pigx-x_offset)>=2.0) {
 	     tempx++;
-	     if (tempx>=40) tempx=0;
+	     if (tempx>=MAPSIZE_X) tempx=0;
 	  }
 	  if ((y_offset+gs->pigy)>=2.0) {
 	     tempy++;
-	     if (tempy>=40) tempy=0;
+	     if (tempy>=MAPSIZE_Y) tempy=0;
 	  }
 	  if ((gs->pigx+x_offset)<=-2.0) {
 	     tempx--;
-	     if (tempx<0) tempx=39;
+	     if (tempx<0) tempx=MAPSIZE_X-1;
 	  }
 	  if ((gs->pigy-y_offset)<=-2.0) {
 	     tempy--;
-	     if (tempy<0) tempy=39;
+	     if (tempy<0) tempy=MAPSIZE_Y-1;
 	  }
 	  if (gs->pigz<terrain_heights[world_map[tempx][tempy].terrain_type]+0.89) { 
 	     gs->pigz=terrain_heights[world_map[tempx][tempy].terrain_type]+0.9;
@@ -547,19 +566,19 @@ int handle_ss_keyboard(int keyspressed,game_state_type  *gs,float scale) {
 	  tempx=gs->gridx;  tempy=gs->gridy;
 	  if ((gs->pigx-x_offset)>=2.0) {
 	     tempx++;
-	     if (tempx>=40) tempx=0;
+	     if (tempx>=MAPSIZE_X) tempx=0;
 	  }
 	  if ((gs->pigy-y_offset)>=2.0) {
 	     tempy++;
-	     if (tempy>=40) tempy=0;
+	     if (tempy>=MAPSIZE_Y) tempy=0;
 	  }
 	  if ((gs->pigx+x_offset)<=-2.0) {
 	     tempx--;
-	     if (tempx<0) tempx=39;
+	     if (tempx<0) tempx=MAPSIZE_X-1;
 	  }
 	  if ((gs->pigy+y_offset)<=-2.0) {
 	     tempy--;
-	     if (tempy<0) tempy=39;
+	     if (tempy<0) tempy=MAPSIZE_Y-1;
 	  }
 	  if (gs->pigz<terrain_heights[world_map[tempx][tempy].terrain_type]+0.89) { 
 	     gs->pigz=terrain_heights[world_map[tempx][tempy].terrain_type]+0.9;
@@ -621,26 +640,91 @@ int handle_ss_keyboard(int keyspressed,game_state_type  *gs,float scale) {
 
 int handle_gp_keyboard(int keyspressed, game_state_type *gs, float scale) {
 
+    struct {
+       float x;
+       float y;
+    } p[6];
+   
+    float oldpigx,oldpigy,olddirection;
+    float x1,y1,xdelta,ydelta,theta;   
+    int collision=0;
+    int i,j,grid[3][3]; 
+    int collide[3][3]={{0,0,0},{0,0,0},{0,0,0}};
+    int need_terrain_check=0,need_spaceship_check=0,tempx,tempy;   
 
-          if (keyspressed&RIGHT_PRESSED) {
-	     gs->direction-=10*scale;
-          }
-          if (keyspressed&LEFT_PRESSED) {
-             gs->direction+=10*scale;    
-          }
-          if (keyspressed&UP_PRESSED) {
-             gs->pigy+=sin( (gs->direction*PI)/180.0)*scale;
-             gs->pigx+=cos( (gs->direction*PI)/180.0)*scale;
-          }
-          if (keyspressed&DOWN_PRESSED) {
-             gs->pigy-=sin( (gs->direction*PI)/180.0)*scale;
-             gs->pigx-=cos( (gs->direction*PI)/180.0)*scale;       
-          }
-             /* should monitor x_offset,y_offset too */
-          if ( (keyspressed>>16)&CONFIRM_PRESSED) {
+       /* remove later */
+    olddirection=gs->direction;
+    oldpigx=gs->pigx;
+    oldpigy=gs->pigy;
+   
+    if (keyspressed&RIGHT_PRESSED) {
+       gs->direction=olddirection-10*scale;
+    }
+    if (keyspressed&LEFT_PRESSED) {
+       gs->direction=olddirection+10*scale;    
+    }
+    
+    if (keyspressed&ACTION1_PRESSED) {
+       do_battle(gs);
+    }
+   
+       /* should these go off of new direction or old??? */
+    if (keyspressed&UP_PRESSED) {
+       gs->pigy=oldpigy+sin( D2R(gs->direction))*scale;
+       gs->pigx=oldpigx+cos( D2R(gs->direction))*scale;
+    }
+          
+    if (keyspressed&DOWN_PRESSED) {
+       gs->pigy=oldpigy-sin( D2R(gs->direction))*scale;
+       gs->pigx=oldpigx-cos( D2R(gs->direction))*scale;       
+    }
+   
+   
+    if (keyspressed&ACTION1_PRESSED) {
+    }
+
+   
+    /**********************************
+      COLLISION DETECTION
+     * ********************************/
+
+   
+    /* This is inefficient now.  There has to be a better way of doing this*/
+    /* possibly one optimization is bitmasks of terrain types, but that */
+    /* depends on < 32 types */
+   
+   
+    /* we check for mountains, towns, or ocean */
+    /* plus spaceship */
+   
+
+    for(j=0;j<3;j++) {
+       for(i=0;i<3;i++) {
+	  tempx=((gs->gridx+(i-1))+40)%40;
+	  tempy=((gs->gridy+(-(j-1)))+40)%40;
+	  grid[i][j]=world_map[tempx][tempy].terrain_type;
+	  if (grid[i][j]>WALKABLE_LIMIT) need_terrain_check++;
+	  if ((tempx==gs->spaceship_gridx)&&(tempy==gs->spaceship_gridy)) {
+	     need_spaceship_check++;
+	  }
+       }
+    }
+
+//    if (need_terrain_check) {
+//       printf("TERRAIN CHECK!\n");
+//    }
+   
+//    if (need_spaceship_check) {
+//       printf("SPACESHIP CHECK\n");
+//    }
+
+   
+                /* should monitor x_offset,y_offset too */
+    if ( ( (keyspressed>>16)&CONFIRM_PRESSED) && need_spaceship_check)  {
 	     printf("TRYING TO GET IN: %i,%i,%.2f,%.2f %i,%i,%.2f,%.2f\n",
 		    gs->gridx,gs->gridy,gs->pigx,gs->pigy,
 		    gs->spaceship_gridx,gs->spaceship_gridy,gs->spaceship_xoffset,gs->spaceship_yoffset);
+       
 	     if ((gs->spaceship_gridx==gs->gridx) &&  
 	         (gs->spaceship_gridy==gs->gridy)) {
 		gs->in_spaceship=1;
@@ -649,36 +733,129 @@ int handle_gp_keyboard(int keyspressed, game_state_type *gs, float scale) {
 		gs->direction=gs->spaceship_direction;
 		gs->pigz=0.75;
 	     }
-	  }
+
+    }
+
+
    
-	  if (keyspressed&ACTION1_PRESSED) {
-          }
-          if (keyspressed&ACTION2_PRESSED) {
-          }
+    theta=D2R(gs->direction+90);
+   
+    x1=sin(theta);
+    y1=cos(theta);
+    xdelta=(y1)/2;  /* Quick hack ;) 90 degrees out of phase */
+    ydelta=(x1)/2;  /* instead of doing another sin/cos      */
+
+    x1*=1.5; y1*=1.5;
+   
+       /* The 6 points we will be checking */
+    p[0].x= x1-xdelta; p[0].y= y1+ydelta;
+    p[1].x= x1+xdelta; p[1].y= y1-ydelta;
+    p[2].x=   -xdelta; p[2].y=   +ydelta;
+    p[3].x=    xdelta; p[3].y=   -ydelta;
+    p[4].x=-x1-xdelta; p[4].y=-y1+ydelta;
+    p[5].x=-x1+xdelta; p[5].y=-y1-ydelta;
+
+
+    if (need_terrain_check) {
+       for(i=0;i<6;i++) {
+             /* Col 0 */
+          if (p[i].x+gs->pigx<-2) {
+	     if (p[i].y+gs->pigy<-2) {
+	        collide[0][2]++;
+	     }
+	     else if (p[i].y+gs->pigy>2) {
+	        collide[0][0]++;
+	     }
+ 	     else {
+	        collide[0][1]++;
+	     }
+          } else if (p[i].x+gs->pigx>2) { /* Col 2 */
+	     if (p[i].y+gs->pigy<-2) {
+	        collide[2][2]++;
+	     }
+	     else if (p[i].y+gs->pigy>2) {
+	        collide[2][0]++;
+	     }
+	     else {
+	        collide[2][1]++;
+	     }
+          } else { /* Col 1 */
+	     if (p[i].y+gs->pigy<-2) {
+	        collide[1][2]++;
+	     }
+	     else if (p[i].y+gs->pigy>2) {
+	        collide[1][0]++;
+	     }
+	     else {
+	        collide[1][1]++;
+	     }
+	  }
+       }
+   
+       for (i=0;i<3;i++) {
+          for(j=0;j<3;j++) {
+	     if ((collide[i][j]) && (grid[i][j]>WALKABLE_LIMIT)) { 
+	        collision++;
+//	     printf("Collision %i %i %.2f %.2f\n",i,j,gs->pigx,gs->pigy);
+	     }
+	  }
+       }
+    }
+#if 0   
+    if ((collision) || ((keyspressed>>16)&ACTION2_PRESSED)){
+       for(i=0;i<3;i++) {
+	  printf("%i %i %i\n",grid[0][i],grid[1][i],grid[2][i]);
+       }
+       printf("\n");
+       for(i=0;i<3;i++) {
+	  printf("%i %i %i\n",collide[0][i],collide[1][i],collide[2][i]);
+       }
+       for(i=0;i<6;i++) {
+	  printf("p[%i]: %.2f %.2f\n",i,p[i].x,p[i].y);
+       }
+       printf("%i %i %.2f %.2f\n",gs->gridx,gs->gridy,gs->pigx,gs->pigy);
+       printf("\n");
+      	 
+    }
+#endif
+    if (!collision) {
+
+    }
+    else {
+              /* RESTORE LAST KNOWN GOOD POSITION */
+       gs->pigx=oldpigx;
+       gs->pigy=oldpigy;
+       gs->direction=olddirection;
+
        
-	     	             if (gs->pigx>=2.0) { 
-				gs->gridx++; 
-				gs->pigx-=4.0;
-				
-			     }
-	                     if (gs->pigx<=-2.0) {
-				gs->gridx--;
-				gs->pigx+=4.0;
-			     }
-	                     if (gs->pigy>=2.0) {
-				gs->gridy++;
-				gs->pigy-=4.0;
-			     }
-	                     if (gs->pigy<=-2.0) {
-				gs->gridy--;
-				gs->pigy+=4.0;
-			     }
-	      
-	                     if (gs->gridx>=40) gs->gridx=0;
-	                     if (gs->gridx<0) gs->gridx=39;
+
+    }
+
+
+   
+
+    if (gs->pigx>=2.0) { 
+       gs->gridx++; 
+       gs->pigx-=4.0;
+    }
+    if (gs->pigx<=-2.0) {
+       gs->gridx--;
+       gs->pigx+=4.0;
+    }
+    if (gs->pigy>=2.0) {
+       gs->gridy++;
+       gs->pigy-=4.0;
+    }
+    if (gs->pigy<=-2.0) {
+       gs->gridy--;
+       gs->pigy+=4.0;
+    }
+
+    if (gs->gridx>=40) gs->gridx=0;
+    if (gs->gridx<0) gs->gridx=39;
 	                      
-	                     if (gs->gridy>=40) gs->gridy=0;
-	                     if (gs->gridy<0) gs->gridy=39;
+    if (gs->gridy>=40) gs->gridy=0;
+    if (gs->gridy<0) gs->gridy=39;
 	     
     return 0;      
 }
@@ -705,6 +882,7 @@ int do_world(game_state_type *gs) {
     leonard=setup_pig_list(0,0);
     spaceships[0]=setup_spaceship(0);
     spaceships[1]=setup_spaceship(1);
+    setup_enemies();
     gs->whoami=leonard;
    
     setup_map();

@@ -1,0 +1,17 @@
+
+Q1.  Isn't this game just a rip-off of Squaresoft's Final Fantasy 7?
+
+A1.  It does have many similarities.  A lot of this is because Square and I
+     had a similar program.  Creating a 3d-game when all your experience
+     is with 2D games.  As with FF7, GPA1 is just an overhead 2d-RPG
+     with some pretty 3d graphics tacked onto it.
+
+
+
+
+
+Q.   I get semi-stuck in corners on the world map.  This sucks!
+
+A.   Yes.  It's a limitation of the collision detection routines right now.
+     I aim to fix this in the future.  For now just wiggle around till you
+     are free.

@@ -58,7 +58,6 @@ int generate_sphere(float radius, int latitudes, int longitudes, int texture) {
    float init_x1,init_y1,init_z1,x1,y1,z1;
    float init_x2,init_y2,init_z2,x2,y2,z2;
    int phi_prime,theta_prime;
-   float normalx,normaly,normalz;
 
 
    glBindTexture(GL_TEXTURE_2D,textures[texture]);

@@ -38,19 +38,38 @@ char region_names[8][25]={
 #define ARCTIC_BASE_AREA 6
 
 
-float terrain_heights[NUM_TERRAINS]={
-   0.0,  /*define GRASS_TERRAIN */
-   4.0, /*define MOUNTAIN_TERRAIN */
-   -0.25, /*define OCEAN_TERRAIN */
-   0.5,   /* #define FOREST_TERRAIN */
-   0.0,   /* define BEACH_TERRAIN   */
-   0.0,   /*#define BEACHCORNER_TERRAIN */
-   0.0,   /*#define BEACHEND_TERRAIN    */
-   0.0,  /*#define TUNDRA_TERRAIN      */
-   0.0,  /*#define CLIFF_TERRAIN       */
-   0.0,  /*#define CLIFFCORNER_TERRAIN */
-   3.0   /*#define OCEAN_CITY_TERRAIN */
+float terrain_heights[]={
+      
+0.0, /* define GRASS_TERRAIN       0 */
+0.5, /*  #define FOREST_TERRAIN    1 */
+0.0, /*  #define TUNDRA_TERRAIN    2 */
+0.0,
+0.0,
+     0.0,
+     0.0,
+     0.0,
+-0.25,  /*   #define OCEAN_TERRAIN     8 */
+4.0,    /*   #define MOUNTAIN_TERRAIN  9 */
+0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+0.0, /*   #define BEACH_TERRAIN       16 */
+0.0, /*   #define BEACHCORNER_TERRAIN 17 */
+0.0, /*   #define BEACHEND_TERRAIN    18 */
+0.0, /*   #define CLIFF_TERRAIN       19 */
+0.0, /*   #define CLIFFCORNER_TERRAIN 20 */
+0.0,
+0.0,
+0.0,
+
+3.0, /*   #define OCEAN_CITY_TERRAIN  24 */
+1.0, /*  #define ARCTIC_BASE_TERRAIN 25 */
+3.0  /*  #define JOPPATOWNE_TERRAIN  26 */
 };
+
 
 void init_hline(x1,x2,y, terrain, rotation, region) {
  
@@ -217,7 +236,7 @@ void setup_map(void) {
        /* Towns */
     init_point(5,18,OCEAN_CITY_TERRAIN,0,JOPPATOWNE_AREA);
     init_point(8,26,OCEAN_CITY_TERRAIN,90,OCEAN_CITY_AREA);
-    init_point(10,33,OCEAN_CITY_TERRAIN,0,ARCTIC_BASE_AREA);
+    init_point(10,33,ARCTIC_BASE_TERRAIN,0,ARCTIC_BASE_AREA);
    
 }
 
@@ -635,6 +654,118 @@ void setup_terrain(void) {
        glTexCoord2f(0.0,1.0);
        glVertex3f(-2.0,2.0,0);
     glEnd();
+    glDisable(GL_TEXTURE_2D);
+   
+    glEndList();
+   
+ /*************************************************************
+ * ARCTIC BASE
+ * ************************************************************/
+    terrain[ARCTIC_BASE_TERRAIN]=glGenLists(1);
+    glNewList(terrain[ARCTIC_BASE_TERRAIN],GL_COMPILE);
+   
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,textures[TUNDRA_TEXTURE]);
+   
+    glBegin(GL_QUADS);
+       glNormal3f(0.0,0.0,1.0);
+       glTexCoord2f(0.0,0.0);
+       glVertex3f(-2.0,-2.0,0);
+   
+       glTexCoord2f(1.0,0.0);
+       glVertex3f(2.0,-2.0,0);
+   
+       glTexCoord2f(1.0,1.0);
+       glVertex3f(2.0,2.0,0);
+   
+       glTexCoord2f(0.0,1.0);
+       glVertex3f(-2.0,2.0,0);
+    glEnd();
+
+       /* roof */
+    glBindTexture(GL_TEXTURE_2D,textures[ARCTIC_ROOF_TEXTURE]);
+    glBegin(GL_QUADS);
+       glNormal3f(0.0,0.0,1.0);
+       glTexCoord2f(0,0);
+       glVertex3f(-1,-1,1);
+   
+       glTexCoord2f(1,0);
+       glVertex3f(1,-1,1);
+   
+       glTexCoord2f(1,1);
+       glVertex3f(1,1,1);
+   
+       glTexCoord2f(0,1);
+       glVertex3f(-1,1,1);
+   
+    glEnd();
+   
+       /* door */
+    glBindTexture(GL_TEXTURE_2D,textures[ARCTIC_DOOR_TEXTURE]);
+    glBegin(GL_QUADS);
+       glNormal3f(0.89442,0.0,0.447);
+       glTexCoord2f(1,1);
+       glVertex3f(1.5,-1.5,0);
+   
+       glTexCoord2f(0,1);
+       glVertex3f(1.5,1.5,0);
+   
+       glTexCoord2f(0,0);
+       glVertex3f(1,1,1);
+   
+       glTexCoord2f(1,0);
+       glVertex3f(1,-1,1);
+   
+    glEnd();
+   
+          /* North window1 */
+    glBindTexture(GL_TEXTURE_2D,textures[ARCTIC_WINDOW_TEXTURE]);
+    glBegin(GL_QUADS);
+       glNormal3f(0.0,0.89442,0.447);
+       glTexCoord2f(1,1);
+       glVertex3f(1.5,1.5,0);
+   
+       glTexCoord2f(0,1);
+       glVertex3f(-1.5,1.5,0);
+   
+       glTexCoord2f(0,0);
+       glVertex3f(-1,1,1);
+   
+       glTexCoord2f(1,0);
+       glVertex3f(1,1,1);
+   
+          /* West window */
+
+       glNormal3f(-0.89442,0.0,0.447);
+       glTexCoord2f(1,1);
+       glVertex3f(-1.5,1.5,0);
+   
+       glTexCoord2f(0,1);
+       glVertex3f(-1.5,-1.5,0);
+   
+       glTexCoord2f(0,0);
+       glVertex3f(-1,-1,1);
+   
+       glTexCoord2f(1,0);
+       glVertex3f(-1,1,1);
+      
+          /* South Window */
+   
+       glNormal3f(0.0,-0.89442,0.447);
+       glTexCoord2f(1,1);
+       glVertex3f(-1.5,-1.5,0);
+   
+       glTexCoord2f(0,1);
+       glVertex3f(1.5,-1.5,0);
+   
+       glTexCoord2f(0,0);
+       glVertex3f(1,-1,1);
+   
+       glTexCoord2f(1,0);
+       glVertex3f(-1,-1,1);
+   
+    glEnd();
+   
     glDisable(GL_TEXTURE_2D);
    
     glEndList();

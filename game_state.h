@@ -3,7 +3,8 @@ typedef struct {
     int xsize,ysize,use_lighting;
    
        /* saved state */   
-    int health,health_total;
+    int health,health_total,anger;
+    float speed;
     int money;
     float direction,pigx,pigy,pigz;
     int gridx,gridy;

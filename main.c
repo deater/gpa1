@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#define VERSION "0.0.11"
+#define VERSION "0.0.12"
 
 #include "vmw_texture.h"
 #include "vmw_glfont.h"
@@ -23,6 +23,7 @@
 #include "game_state.h"
 #include "world.h"
 
+#include "setup_enemies.h"
 
 int use_lighting=1;
 int show_fps=1;
@@ -78,7 +79,13 @@ void LoadTextures(void) {
     LoadTexture(64,64,"./textures/tile_door.amg",TILE_DOOR_TEXTURE,0,GL_CLAMP);
     LoadTexture(64,64,"./textures/tile_window.amg",TILE_WINDOW_TEXTURE,0,GL_REPEAT);
     LoadTexture(64,64,"./textures/tile_blank.amg",TILE_BLANK_TEXTURE,0,GL_CLAMP);
-   
+    LoadTexture(64,64,"./textures/arctic_roof.amg",ARCTIC_ROOF_TEXTURE,0,GL_CLAMP);
+        /* 35 */
+    LoadTexture(64,64,"./textures/arctic_door.amg",ARCTIC_DOOR_TEXTURE,0,GL_CLAMP);
+    LoadTexture(64,64,"./textures/arctic_window.amg",ARCTIC_WINDOW_TEXTURE,0,GL_CLAMP);
+    LoadTexture(128,64,"./textures/bushes.amg",BUSHES_TEXTURE,1,GL_CLAMP);
+    LoadTexture(64,64,"./textures/disintegrate.amg",DISINTEGRATE_TEXTURE,0,GL_CLAMP);
+       
 }
 
 void init_gl(void) {
@@ -188,7 +195,6 @@ int main(int argc, char **argv) {
        }
     }
    
-   
        /* Setup OpenGL screen */
     init_gl();
     reshape(gs.xsize,gs.ysize);
@@ -210,6 +216,8 @@ int main(int argc, char **argv) {
        /* init game state */
     gs.health=100;
     gs.health_total=100;
+    gs.anger=0;
+    gs.speed=1.0;
     gs.money=100;
     gs.direction=0;
     gs.pigx=0; gs.pigy=0; gs.pigz=-0.5;

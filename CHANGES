@@ -49,3 +49,13 @@
 
 29 July 2001
 + Added in-game menu
++ Added "town" terrain
+
+1 August 2001
++ Started work on "battle arena"
+
+4 August 2001
++ Added "cube" enemy
+
+12 August 2001
++ After playing off and on for a week got collision detection mostly working

@@ -1,3 +1,7 @@
 + buttons configurable
 + rounded world
 + clean up joystick handling
+
++ Better collision detection for world-map.
+  [Can walk on beach, not get stuck on corners, take into account 
+   height of terrain, etc]
