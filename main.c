@@ -26,15 +26,15 @@ int use_textures=1;
 int use_lighting=1;
 
    GLuint leonard;
-   GLuint terrain[8];
+   GLuint terrain[NUM_TERRAINS];
 
 
-GLuint textures[12];
+GLuint textures[20];
 
 
 float direction=0.0,pigx=0.0,pigy=0.0,pigz=1.0;
 
-int gridx=20,gridy=20;
+int gridx=5,gridy=13;
 
 float camera_direction=90*(180.0/PI),camerax=-10.0,cameray=0,cameraz=5.0;
 
@@ -68,20 +68,8 @@ void LoadTexture(int x,int y,char *filename,int which_one,int transparent,
 
 float sphere[28][36][3];
 
-int world_map[40][40];
+map_element world_map[40][40];
 
-void setup_map(void) {
-
-   int i,j;
-   
-   for(i=0;i<40;i++) {
-      for(j=0;j<40;j++) {
-	 if ((i<20) &&(j<20)) world_map[i][j]=GRASS_TERRAIN;
-	 else if ((i>20) && (j>20)) world_map[i][j]=MOUNTAIN_TERRAIN;
-	 else world_map[i][j]=OCEAN_TERRAIN;
-      }
-   }
-}
 
 void setup_sphere(void) {
    
@@ -107,7 +95,7 @@ void LoadTextures(void) {
 
    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
    
-   glGenTextures(12,textures);  
+   glGenTextures(20,textures);  
    
    LoadTexture(64,64,"./textures/carrot.amg",CARROT_TEXTURE,0,GL_REPEAT);
    LoadTexture(64,64,"./textures/eye.amg",EYE_TEXTURE,0,GL_CLAMP);
@@ -121,6 +109,11 @@ void LoadTextures(void) {
    LoadTexture(64,64,"./textures/flesh.amg",FLESH_TEXTURE,0,GL_CLAMP);
    LoadTexture(64,64,"./textures/ocean.amg",OCEAN_TEXTURE,0,GL_REPEAT);
    LoadTexture(64,64,"./textures/mountain.amg",MOUNTAIN_TEXTURE,0,GL_CLAMP);
+   LoadTexture(64,64,"./textures/cliff.amg",CLIFF_TEXTURE,0,GL_REPEAT);
+   LoadTexture(64,64,"./textures/sand.amg",SAND_TEXTURE,0,GL_REPEAT);
+   LoadTexture(64,64,"./textures/tree.amg",FOREST_TEXTURE,0,GL_REPEAT);
+   LoadTexture(64,64,"./textures/shallow.amg",SHALLOW_TEXTURE,0,GL_CLAMP);
+   LoadTexture(64,64,"./textures/tundra.amg",TUNDRA_TEXTURE,0,GL_REPEAT);
 }
 
 GLubyte *font;
@@ -334,7 +327,7 @@ void draw_robo_pig(float pigx,float pigy,float pigz,float direction) {
 
 void display(void) {
    
-   int i,j,distance_seen,land_type;
+   int i,j,distance_seen,land_type,tempx,tempy;
      GLfloat light_position[]={0.0,0.0,10.0,0.0
      };
    
@@ -477,28 +470,37 @@ void display(void) {
 
    glEnable(GL_TEXTURE_2D);
    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-       /* Draw grassy field */   
+
+   
+   
+   
+       /* Draw World */   
 
 
    
-      /* 25.5 = "radius of world" */
-   distance_seen=(int)sqrt(2*25.5*cameraz);
-//   printf("DS=%i\n",distance_seen);   
-   
+       /* 25.5 = "radius of world" */
+    distance_seen=(int)sqrt(2*25.5*cameraz);
 
-      for(i=0;i<=distance_seen*2;i++) {
-         for(j=0;j<=distance_seen*2;j++) {
+    for(i=-distance_seen;i<=distance_seen;i++) {
+       for(j=-distance_seen;j<=distance_seen;j++) {
 	    
-	    land_type=world_map[ (gridx+(i-distance_seen))%40]
-			       [ (gridy+(j-distance_seen))%40];
+	  tempx=gridx+i;
+	  if (tempx<0) tempx+=40;
+	  if (tempx>39) tempx-=40;
+	  tempy=gridy+j;
+	  if (tempy<0) tempy+=40;
+	  if (tempy>39) tempy-=40;
+	    
+	  land_type=world_map[tempx][tempy].terrain_type;
 
-	    glPushMatrix();
-	    glTranslatef( (i-distance_seen)*4+2,(j-distance_seen)*4+2,0); 
-            glCallList(terrain[land_type]);
-	    glPopMatrix();
+	  glPushMatrix();
+	  glTranslatef( (i*4)+2,(j*4)+2,0); 
+	  glRotatef(world_map[tempx][tempy].rotation,0,0,1);
+          glCallList(terrain[land_type]);
+	  glPopMatrix();
 
-	 }
-      }
+       }
+    }
 
    
    
@@ -735,8 +737,7 @@ int main(int argc, char **argv) {
 	  frames=0;
        }
        check_keyboard();
-       display();
-       
+       display();       
     }
     SDL_Quit();
 

@@ -21,3 +21,6 @@
 + Added code to cutoff at the horizon
 + Made the terrain into display lists
 + Made the terrain
++ Made more terrain
++ Fixed the world-drawing code
++ Started implementing final map

@@ -10,3 +10,8 @@
 #define FLESH_TEXTURE             9
 #define OCEAN_TEXTURE		 10
 #define MOUNTAIN_TEXTURE	 11
+#define CLIFF_TEXTURE            12
+#define FOREST_TEXTURE           13
+#define SAND_TEXTURE             14
+#define SHALLOW_TEXTURE          15
+#define TUNDRA_TEXTURE           16

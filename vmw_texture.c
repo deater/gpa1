@@ -84,6 +84,7 @@ int vmwPutPixel(int x,int y,int color,GLubyte *texture) {
       if (texture_alpha && color==0) texture[(y*(texture_x*4))+(x*4)+3]=0;
       else texture[(y*(texture_x*4))+(x*4)+3]=255;
    }
+   return 0;
 }
 
 
@@ -95,7 +96,7 @@ int vmwDrawHLine(int x,int y,int run,int color,GLubyte *target) {
       vmwPutPixel(x+i,y,color,target);  
       
    }
-   
+   return 0;
 }
 
 vmwPaintProHeader *vmwGetPaintProHeader(char *filename) {
