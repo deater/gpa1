@@ -29,6 +29,8 @@ GLuint textures[10];
 
 float direction=0.0,pigx=0.0,pigy=0.0,pigz=1.0;
 
+float camera_direction=90*(180.0/PI),camerax=-10.0,cameray=0,cameraz=5.0;
+
 int done=0;
 
 
@@ -102,7 +104,7 @@ void init(void) {
    
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
-//   gluPerspective(45.0f,(GLfloat)640/(GLfloat)480,0.1f,100.0f);
+   gluPerspective(60.0f,(GLfloat)640/(GLfloat)480,0.1f,100.0f);
    
    LoadTextures();
   
@@ -257,6 +259,8 @@ void draw_robo_pig(float pigx,float pigy,float pigz,float direction) {
 }
 
 void display(void) {
+   
+   int i,j;
      GLfloat light_position[]={0.0,0.0,10.0,0.0
      };
    
@@ -273,7 +277,7 @@ void display(void) {
 
 
    glLoadIdentity();
-   gluLookAt(-10.0,0.0,5.0,
+   gluLookAt(camerax,cameray,cameraz,
 	     0.0,0.0,0.0,
 	     0.0,0.0,1.0);
    
@@ -303,7 +307,7 @@ void display(void) {
 	glMaterialfv(GL_FRONT,GL_SPECULAR,default_s);
 	glMaterialfv(GL_FRONT,GL_EMISSION,default_e);
      }
-       /* Draw grassy field */
+
    glPushMatrix();
    glRotatef( (360-direction),0,0,1);   
    glTranslatef(-pigx,-pigy,-0.5);
@@ -313,36 +317,114 @@ void display(void) {
    
    glEnable(GL_TEXTURE_2D);
        /* Draw Sky */
-#if 0
+
+   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
    glBindTexture(GL_TEXTURE_2D,textures[SKY_TEXTURE]);
    glBegin(GL_QUADS);
+   
+          /* Back */
       glNormal3f(-1.0,0.0,0.0);
    
       glTexCoord2f(0.0, 0.0);
-      glVertex3f(0,10,10);
+      glVertex3f(20,-20,-20);
       glTexCoord2f(0.0, 1.0);
-      glVertex3f(0,10,-10);
+      glVertex3f(20,-20,20);
       glTexCoord2f(1.0, 1.0);
-      glVertex3f(0,-10,-10);
+      glVertex3f(20,20,20);
       glTexCoord2f(1.0, 0.0);
-      glVertex3f(0,-10,10);
-   glEnd();
-#endif   
+      glVertex3f(20,20,-20);
    
-   glBindTexture(GL_TEXTURE_2D,textures[GRASS_TEXTURE]);         
-   glBegin(GL_QUADS);
+         /* Right */
+   
+      glNormal3f(0.0,1.0,0.0);
+   
+      glTexCoord2f(0.0, 0.0);
+      glVertex3f(20,-20,20);
+      glTexCoord2f(0.0, 1.0);
+      glVertex3f(20,-20,-20);
+      glTexCoord2f(1.0, 1.0);
+      glVertex3f(-20,-20,-20);
+      glTexCoord2f(1.0, 0.0);
+      glVertex3f(-20,-20,20);
+   
+         /* Front */
+      glNormal3f(1.0,0.0,0.0);
+   
+      glTexCoord2f(0.0, 0.0);
+      glVertex3f(-20,-20,20);
+      glTexCoord2f(0.0, 1.0);
+      glVertex3f(-20,-20,-20);
+      glTexCoord2f(1.0, 1.0);
+      glVertex3f(-20,20,-20);
+      glTexCoord2f(1.0, 0.0);
+      glVertex3f(-20,20,20);
+   
+         /* Left */
+    
+      glNormal3f(0.0,-1.0,0.0);
+   
+      glTexCoord2f(0.0, 0.0);
+      glVertex3f(-20,20,20);
+      glTexCoord2f(0.0, 1.0);
+      glVertex3f(-20,20,-20);
+      glTexCoord2f(1.0, 1.0);
+      glVertex3f(20,20,-20);
+      glTexCoord2f(1.0, 0.0);
+      glVertex3f(20,20,20);
+   
+   
+          /* top */
+      glNormal3f(0.0,0.0,-1.0);
+   
+      glTexCoord2f(0.0, 0.0);
+      glVertex3f(20,20,20);
+      glTexCoord2f(0.0, 1.0);
+      glVertex3f(20,-20,20);
+      glTexCoord2f(1.0, 1.0);
+      glVertex3f(-20,-20,20);
+      glTexCoord2f(1.0, 0.0);
+      glVertex3f(-20,20,20);
+   
+             /* bottom */
       glNormal3f(0.0,0.0,1.0);
    
       glTexCoord2f(0.0, 0.0);
-      glVertex3f(-5,-5,0);
+      glVertex3f(20,20,-20);
       glTexCoord2f(0.0, 1.0);
-      glVertex3f(-5,5,0);
+      glVertex3f(20,-20,-20);
       glTexCoord2f(1.0, 1.0);
-      glVertex3f(5,5,0);
+      glVertex3f(-20,-20,-20);
       glTexCoord2f(1.0, 0.0);
-      glVertex3f(5,-5,0);
+      glVertex3f(-20,20,-20);
+   
+   glEnd();
+
+   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+       /* Draw grassy field */   
+   glBindTexture(GL_TEXTURE_2D,textures[GRASS_TEXTURE]);      
+
+   glBegin(GL_QUADS);
+      for(i=-10;i<10;i++) {
+         for (j=-10;j<10;j++) {
+	     glNormal3f(0.0,0.0,1.0);
+   
+             glTexCoord2f(0.0, 0.0);
+             glVertex3f(i*2,j*2,0);
+             
+	     glTexCoord2f(0.0, 1.0);
+             glVertex3f(i*2,(j*2)+2,0);
+      
+	     glTexCoord2f(1.0, 1.0);
+             glVertex3f((i*2)+2,(j*2)+2,0);
+	    
+             glTexCoord2f(1.0, 0.0);
+             glVertex3f( (i*2)+2,(j*2),0);
+	 }
+      }
    glEnd();
    glDisable(GL_TEXTURE_2D);
+   
+   
    draw_carrot(-4.0,3.0,0.5,90);
    glPopMatrix();
 
@@ -354,7 +436,7 @@ void display(void) {
    
    draw_guinea_pig(leonard,0,0,0,0);
    
-   printf("%.2f %.2f %.2f\n",pigx,pigy,pigz);
+//   printf("%.2f %.2f %.2f\n",pigx,pigy,pigz);
    
    
    
@@ -369,7 +451,7 @@ void reshape(int w,int h) {
    glViewport(0,0,(GLsizei)w,(GLsizei)h);
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
-   gluPerspective(60.0,(GLfloat)w/(GLfloat)h,1.0,30.0);
+   gluPerspective(60.0,(GLfloat)w/(GLfloat)h,1.0,100.0);
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
    //glTranslatef(0.0,0.0,-3.6);
@@ -381,7 +463,19 @@ int check_keyboard(void) {
    
     SDL_Event event;
     int keypressed;
-	       
+
+    static int up_down=0,up_time=0;
+
+    static int count=0;
+   
+    if (up_down) {
+       count++;
+       if (count==100) {
+	  count=0;
+	  printf("REPEAT!\n");
+       }
+    }
+   
    
    
     while ( SDL_PollEvent(&event) ) {
@@ -389,7 +483,19 @@ int check_keyboard(void) {
           done = 1;
 	  return 1;
        }
-		          
+
+       if (event.type == SDL_KEYUP) {
+	  printf("UP\n");
+	  keypressed=event.key.keysym.sym;
+	  
+	  switch(keypressed) {
+              case SDLK_UP: up_down=0;	 
+	                    return 1;
+	                    break;
+	     
+	  }
+       }
+       
        if ( event.type == SDL_KEYDOWN ) {
 	  keypressed=event.key.keysym.sym;
 	   
@@ -399,23 +505,40 @@ int check_keyboard(void) {
 	     
 	   case 'T':
 	   case 't': use_textures=!(use_textures); break;
+
+	   case 'k': case 'K':
+	             camera_direction+=(10.0*PI)/180;
+	             if (camera_direction>2*PI) camera_direction-=2*PI;
+	             camerax=10*sin(camera_direction);
+	             cameray=10*cos(camera_direction);
+	             break;
+	   case 'j': case 'J':
+	             camera_direction-=(10.0*PI)/180;
+	             if (camera_direction<0.0) camera_direction+=2*PI;
+	             camerax=10*sin(camera_direction);
+	             cameray=10*cos(camera_direction);
+	             break;
+	  case 'm': case 'M':
+	             cameraz-=0.5;
+	             break;
+	   case 'i': case 'I':
+	             cameraz+=0.5;;
+	             break;
 	     
 	   case SDLK_ESCAPE: done = 1; 
 	                     return 1;  
 	                     break;
 	   case SDLK_RIGHT:  direction-=10;
-                             display();
                              return 1;
            case SDLK_LEFT:   direction+=10;    
-                             display();
                              return 1;
-           case SDLK_UP:     pigy+=sin( (direction*PI)/180.0);
+           case SDLK_UP:     up_down=1;
+	                     up_time=SDL_GetTicks();
+	                     pigy+=sin( (direction*PI)/180.0);
                              pigx+=cos( (direction*PI)/180.0);
-                             display();
 	                     return 1;
 	   case SDLK_DOWN:   pigy-=sin( (direction*PI)/180.0);
                              pigx-=cos( (direction*PI)/180.0);
-                            display();
                              return 1;
 	  }
        }
@@ -426,7 +549,8 @@ int check_keyboard(void) {
 int main(int argc, char **argv) {
 
 
-   
+   int frames=0,msecs=0,old_msecs=0;
+      
    parse_config();
    
    
@@ -454,8 +578,20 @@ int main(int argc, char **argv) {
 
     leonard=setup_pig_list(0,0);
    
+    
     while ( ! done ) {
+       
+       frames++;
+//       printf("%i\n",frames);
+       if (frames%100==0) {
+	  old_msecs=msecs;
+	  msecs=SDL_GetTicks();
+          printf("FPS=%.2f\n", frames/((msecs-old_msecs)/1000.0));	 
+	  frames=0;
+       }
        check_keyboard();
+       display();
+       
     }
     SDL_Quit();
 
