@@ -3,7 +3,7 @@
 #include "keyboard.h"
 
 
-int check_keyboard(char *alphanum) {
+int check_keyboard(char *alphanum,int reset) {
    
     SDL_Event event;
    
@@ -15,6 +15,11 @@ int check_keyboard(char *alphanum) {
 
     *alphanum=0;
    
+    if (reset) {
+       keys_down=0;
+       return 1;
+    }
+        
     while ( SDL_PollEvent(&event) ) {
        if ( event.type == SDL_QUIT ) {
           keys_down|=ESC_PRESSED;
@@ -96,6 +101,8 @@ int check_keyboard(char *alphanum) {
 	                    break;
 	     case SDLK_LEFT: keys_down&=(~LEFT_PRESSED);
 	                    break;
+	   case SDLK_ESCAPE: keys_down&=(~ESC_PRESSED); break;
+	     
 	   case 'a': case 'A': keys_down&=(~A_PRESSED); break;
 	   case 'z': case 'Z': keys_down&=(~Z_PRESSED); break;
 	  }
@@ -137,7 +144,6 @@ int check_keyboard(char *alphanum) {
 	                     break;  
 	     
 	   case SDLK_ESCAPE: keys_down|=ESC_PRESSED; 
-	                     return 1;  
 	                     break;
 	   case SDLK_RIGHT:  momentary|=RIGHT_PRESSED;
                              keys_down|=RIGHT_PRESSED;	                     

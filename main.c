@@ -53,7 +53,6 @@ int show_menu=0;
 
 float camera_direction=90*(180.0/PI),camerax=-10.0,cameray=0,cameraz=5.0;
 
-int done=0;
 
 
 void parse_config(void) {
@@ -105,10 +104,12 @@ void LoadTextures(void) {
        /* 25 */
    LoadAlphaTexture(64,64,"./textures/shadow.amg",SHADOW_TEXTURE,0,GL_CLAMP,0x00,0x00,0x00);
    LoadAlphaTexture(64,64,"./textures/splash.amg",SPLASH_TEXTURE,0,GL_CLAMP,0x52,0xdd,0xdd);
+   LoadTexture(128,64,"./textures/planet_map.amg",WORLD_MAP_TEXTURE,0,GL_CLAMP);
+   LoadTexture(64,64,"./textures/moon_map.amg",MOON_MAP_TEXTURE,0,GL_CLAMP);
+   LoadTexture(64,64,"./textures/sun.amg",SUN_TEXTURE,0,GL_CLAMP);
+       /* 30 */
+   LoadTexture(64,64,"./textures/stars.amg",STAR_TEXTURE,0,GL_REPEAT);
 }
-
-GLubyte *font;
-
 
 void init(void) {
 //   glViewport(0,0,640,480);
@@ -444,6 +445,8 @@ float scale=0.0;
 int main(int argc, char **argv) {
 
    SDL_Joystick *joy;
+
+   int done=0;
    
    int frames=0,fps_msecs=0,old_fps_msecs=0,keyspressed=0;
    int xsize=640,ysize=480;
@@ -499,8 +502,9 @@ int main(int argc, char **argv) {
 //   display();
  
     opener();
-    do_story();
-   
+    do_story(xsize,ysize);
+
+    check_keyboard(&key_alpha,1);
     leonard=setup_pig_list(0,0);
     spaceships[0]=setup_spaceship(0);
     whoami=leonard;
@@ -523,7 +527,7 @@ int main(int argc, char **argv) {
 	  frames=0;
        }
 
-       keyspressed=check_keyboard(&key_alpha);
+       keyspressed=check_keyboard(&key_alpha,0);
 
        switch(key_alpha) {
           case 'l': use_lighting=!(use_lighting); break;

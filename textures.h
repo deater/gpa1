@@ -25,7 +25,11 @@
 #define SS_BACK                  24
 #define SHADOW_TEXTURE		 25
 #define SPLASH_TEXTURE		 26
-#define TOTAL_TEXTURES 27
+#define WORLD_MAP_TEXTURE        27
+#define MOON_MAP_TEXTURE         28
+#define SUN_TEXTURE              29
+#define STAR_TEXTURE             30
+#define TOTAL_TEXTURES 31
 
 extern GLuint textures[];
 

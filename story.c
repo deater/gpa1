@@ -50,31 +50,155 @@ void setup_sphere(void) {
    }
 }
 
+int generate_sphere(float radius, int latitudes, int longitudes, int texture) {
+ 
+       /* The way I do this is brutally inefficient */
+       /* I should optimize it later [ie, do everything in radians] */
+   float delta_theta,delta_phi;
+   float init_x1,init_y1,init_z1,x1,y1,z1;
+   float init_x2,init_y2,init_z2,x2,y2,z2;
+   int phi_prime,theta_prime;
+   float normalx,normaly,normalz;
 
-void do_story(void) {
-int old_msecs=0,new_msecs=0;
-float camera_direction=90*(180.0/PI),camerax=-10.0,cameray=0,cameraz=5.0;
-#if 0
-   int i,j,distance_seen,land_type,tempx,tempy;
+
+   glBindTexture(GL_TEXTURE_2D,textures[texture]);
+   
+   delta_phi=180.0/(float)latitudes;
+   delta_theta=360.0/(float)longitudes;
+   
+   
+   for(phi_prime=0;phi_prime<latitudes;phi_prime++) {
+      theta_prime=0;
+      glBegin(GL_QUAD_STRIP);
+      
+      init_x1=radius*sin(D2R(phi_prime*delta_phi))*cos(D2R(theta_prime*delta_theta));
+      init_y1=radius*sin(D2R(phi_prime*delta_phi))*sin(D2R(theta_prime*delta_theta));
+      init_z1=radius*cos(D2R(phi_prime*delta_phi));
+      
+
+      glNormal3f(init_x1/radius,init_y1/radius,init_z1/radius);
+      glTexCoord2f( (theta_prime*delta_theta)/360.0, (phi_prime*delta_phi)/360.0);
+      glVertex3f(init_x1,init_y1,init_z1);      
+      
+      init_x2=radius*sin(D2R((phi_prime+1)*delta_phi))*cos(D2R(theta_prime*delta_theta));
+      init_y2=radius*sin(D2R((phi_prime+1)*delta_phi))*sin(D2R(theta_prime*delta_theta));
+      init_z2=radius*cos(D2R((phi_prime+1)*delta_phi));
+      
+      
+      
+//      printf("%.2f %.2f %.2f : %.2f %.2f %.2f\n",radius,phi_prime*delta_phi,theta_prime*delta_theta,normalx,normaly,normalz);
+      
+      glNormal3f(init_x2/radius,init_y2/radius,init_z2/radius);
+      glTexCoord2f( (theta_prime*delta_theta)/360.0, ((phi_prime+1)*delta_phi)/360.0);
+      glVertex3f(init_x2,init_y2,init_z2);
+      
+      for(theta_prime=1;theta_prime<longitudes;theta_prime++) {
+   
+	 x1=radius*sin(D2R(phi_prime*delta_phi))*cos(D2R(theta_prime*delta_theta));
+         y1=radius*sin(D2R(phi_prime*delta_phi))*sin(D2R(theta_prime*delta_theta));
+	 z1=radius*cos(D2R(phi_prime*delta_phi));
+	 
+	 
+         glNormal3f(x1/radius,y1/radius,z1/radius);
+	 glTexCoord2f( (theta_prime*delta_theta)/360.0, (phi_prime*delta_phi)/360.0);
+	 glVertex3f(x1,y1,z1);
+	 
+	 x2=radius*sin(D2R((phi_prime+1)*delta_phi))*cos(D2R(theta_prime*delta_theta));
+         y2=radius*sin(D2R((phi_prime+1)*delta_phi))*sin(D2R(theta_prime*delta_theta));
+         z2=radius*cos(D2R((phi_prime+1)*delta_phi));
+	 
+	 glNormal3f(x2/radius,y2/radius,z2/radius);
+	 glTexCoord2f( (theta_prime*delta_theta)/360.0, ((phi_prime+1)*delta_phi)/360.0);
+	 glVertex3f(x2,y2,z2);	 
+      }
+      glNormal3f(init_x1/radius,init_y1/radius,init_z1/radius);
+      glTexCoord2f( (theta_prime*delta_theta)/360.0, (phi_prime*delta_phi)/360.0);
+      glVertex3f(init_x1,init_y1,init_z1);
+      
+            glNormal3f(init_x1/radius,init_y1/radius,init_z1/radius);
+      glTexCoord2f( (theta_prime*delta_theta)/360.0, (phi_prime*delta_phi)/360.0);
+      glVertex3f(init_x2,init_y2,init_z2);
+      glEnd();      
+   }
+   
+   return 0;
+}
+
+
+void do_story(int width,int height) {
+
+    int old_msecs=0,msecs=0;
+    int frames_msec,old_frames_msec=0,frames=0;
+    float camera_direction=90*(180.0/PI),camerax=-10.0,cameray=0,cameraz=5.0;
+
+    char alpha;
+    int done=0,keyspressed;
+     
+       
+    float stars[1000][3];
+   
+   int i,j,distance_seen,land_type,tempx,tempy,theta,phi;
    GLfloat shadow_width;
-     GLfloat light_position[]={5.0,5.0,100.0,0.0
+       
+     GLfloat light_position[]={1.0,0.0,0.0,0.0
      };
    
 //     GLfloat light_ambient[]={0.5,0.5,0.5,1.0
 //     };
-       GLfloat lmodel_ambient[]={0.9,0.9,0.9,1.0
+       GLfloat lmodel_ambient[]={0.4,0.4,0.4,1.0
        };
    
    
        GLfloat white_light[]={1.0,1.0,1.0,1.0
        };
    
+    glViewport(0,0,(GLsizei)width,(GLsizei)height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60.0,(GLfloat)width/(GLfloat)height,1.0,200000.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+      //glTranslatef(0.0,0.0,-3.6);
+
+    for(i=0;i<1000;i++) {
+       theta=rand()%360;
+       phi=rand()%180;
+       
+       stars[i][0]=150000*sin(D2R(phi))*cos(D2R(theta));
+       stars[i][1]=150000*sin(D2R(phi))*sin(D2R(theta));
+       stars[i][2]=150000*cos(D2R(phi));
+       
+       
+    }
+   
+   
+    old_msecs=SDL_GetTicks();
+    while(!done) {
+       
+       frames++;
+       if (frames%100==0) {
+	  frames_msec=SDL_GetTicks();
+          printf("FPS: %.2f\n",frames/((frames_msec-old_frames_msec)/1000.0));
+	  frames=0;
+	  old_frames_msec=frames_msec;
+       }
+       
+       
+       msecs=SDL_GetTicks();
+       cameray=(15-((msecs-old_msecs)/1000.0))*44.0;
+       camerax=(((msecs-old_msecs)/1000.0))*-3.2;
+  
+
+       if (((msecs-old_msecs)/1000.0)>20.0) {
+	  done=1;
+       }
    
    
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
    glLoadIdentity();
+
    gluLookAt(camerax,cameray,cameraz,
 	     0.0,0.0,0.0,
 	     0.0,0.0,1.0);
@@ -91,9 +215,7 @@ float camera_direction=90*(180.0/PI),camerax=-10.0,cameray=0,cameraz=5.0;
       glEnable(GL_LIGHTING);
       glEnable(GL_LIGHT0);
 
-   
-
-   
+      
      {
 	GLfloat default_a[]={0.6,0.6,0.6,1.0};
         GLfloat default_d[]={   0.8,0.8,0.8,1.0};
@@ -108,8 +230,8 @@ float camera_direction=90*(180.0/PI),camerax=-10.0,cameray=0,cameraz=5.0;
      }
 
    glPushMatrix();
-   glRotatef( (360-gs.direction),0,0,1);   
-   glTranslatef(-gs.pigx,-gs.pigy,-gs.pigz);
+//   glRotatef( (360-gs.direction),0,0,1);   
+//   glTranslatef(-gs.pigx,-gs.pigy,-gs.pigz);
 
    
    glColor3f(0.4102,0.543,0.1328);
@@ -117,237 +239,115 @@ float camera_direction=90*(180.0/PI),camerax=-10.0,cameray=0,cameraz=5.0;
    glEnable(GL_TEXTURE_2D);
        /* Draw Sky */
 
+
+       
+   glDisable(GL_LIGHTING);
+   glDisable(GL_TEXTURE_2D);
+   glColor3f(1.0,1.0,1.0);
+   glBegin(GL_POINTS);
+
+       for(i=0;i<1000;i++) {
+//	  printf("%.2f %.2f %.2f\n",stars[i][0],stars[i][1],stars[i][2]);
+	  glVertex3f(stars[i][0],stars[i][1],stars[i][2]);
+       }
+       
+   glEnd();
+   glEnable(GL_LIGHTING);
+   glEnable(GL_TEXTURE_2D);
+
    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-   glBindTexture(GL_TEXTURE_2D,textures[SKY_TEXTURE]);
+   glBindTexture(GL_TEXTURE_2D,textures[SUN_TEXTURE]);
    glBegin(GL_QUADS);
    
-#define SKY_DISTANCE 60
    
-          /* Back */
+          /* Draw Sun */
+          /* Earth's sun is 149 000 000km away and 1 400 000km in diameter */
+          /* Here I am using a scale of 1:1000km */
+       
+          /* I actually make the sun bigger by factor of 10 because otherwise */
+          /* it is hardly more than a large star... */
+       
       glNormal3f(-1.0,0.0,0.0);
    
       glTexCoord2f(0.0, 0.0);
-      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
-      glTexCoord2f(0.0, 1.0);
-      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
-      glTexCoord2f(1.0, 1.0);
-      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
+      glVertex3f(149000,7000,-7000);
       glTexCoord2f(1.0, 0.0);
-      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
-   
-         /* Right */
-   
-      glNormal3f(0.0,1.0,0.0);
-   
-      glTexCoord2f(0.0, 0.0);
-      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
-      glTexCoord2f(0.0, 1.0);
-      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
+      glVertex3f(149000,-7000,-7000);
       glTexCoord2f(1.0, 1.0);
-      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
-      glTexCoord2f(1.0, 0.0);
-      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
-   
-         /* Front */
-      glNormal3f(1.0,0.0,0.0);
-   
-      glTexCoord2f(0.0, 0.0);
-      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
+      glVertex3f(149000,-7000,7000);
       glTexCoord2f(0.0, 1.0);
-      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
-      glTexCoord2f(1.0, 1.0);
-      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
-      glTexCoord2f(1.0, 0.0);
-      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
-   
-         /* Left */
-   
-       glNormal3f(0.0,-1.0,0.0);
-   
-      glTexCoord2f(0.0, 0.0);
-      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
-      glTexCoord2f(0.0, 1.0);
-      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
-      glTexCoord2f(1.0, 1.0);
-      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
-      glTexCoord2f(1.0, 0.0);
-      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
-   
-   
-          /* top */
-      glNormal3f(0.0,0.0,-1.0);
-   
-      glTexCoord2f(0.0, 0.0);
-      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
-      glTexCoord2f(0.0, 1.0);
-      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
-      glTexCoord2f(1.0, 1.0);
-      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
-      glTexCoord2f(1.0, 0.0);
-      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
-   
-             /* bottom */
-      glNormal3f(0.0,0.0,1.0);
-   
-      glTexCoord2f(0.0, 0.0);
-      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
-      glTexCoord2f(0.0, 1.0);
-      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
-      glTexCoord2f(1.0, 1.0);
-      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
-      glTexCoord2f(1.0, 0.0);
-      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
-   
+      glVertex3f(149000,7000,7000);
    glEnd();
+   
+       
+   glEnable(GL_TEXTURE_2D);
 
-//   glEnable(GL_TEXTURE_2D);
    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
 
-   
-   
-   
-       /* Draw World */   
+       /* make world.  Rotate 90 degrees so main continent is face out */
+   glPushMatrix();
+   glRotatef(270,0,0,1);
+   generate_sphere(12.7,20,20,WORLD_MAP_TEXTURE);
+   glPopMatrix();    
+       
+   glPushMatrix();
+   glTranslatef(0,384,0);
+       
+       /* moon is 3 times bigger too */
+   generate_sphere(8,15,15,MOON_MAP_TEXTURE);
 
-
-   
-       /* 25.5 = "radius of world" */
-    distance_seen=(int)sqrt(2*25.5*cameraz);
-
-    for(i=-distance_seen;i<=distance_seen;i++) {
-       for(j=-distance_seen;j<=distance_seen;j++) {
-	    
-	  tempx=gs.gridx+i;
-	  if (tempx<0) tempx+=40;
-	  if (tempx>39) tempx-=40;
-	  tempy=gs.gridy+j;
-	  if (tempy<0) tempy+=40;
-	  if (tempy>39) tempy-=40;
-	    
-	  land_type=world_map[tempx][tempy].terrain_type;
-
-	  glPushMatrix();
-	  glTranslatef( (i*4)+2,(j*4)+2,0); 
-	  glRotatef(world_map[tempx][tempy].rotation,0,0,1);
-          glCallList(terrain[land_type]);
-	  glPopMatrix();
-
-       }
-    }
-
-   
-   
-//   draw_carrot(-4.0,3.0,0.5,90);
    glPopMatrix();
 
-   
-//   draw_robo_pig(gs.pigx,gs.pigy,gs.pigz,direction);
-//      draw_good_pig(gs.pigx,gs.pigy,gs.pigz,direction);
-
-//   draw_guinea_pig(leonard,gs.pigx,gs.pigy,gs.pigz,direction);
-   
-   if (whoami==leonard) {
-      glPushMatrix(); 
-//      glTranslatef(gs.pigx,gs.pigy,gs.pigz);
-      
-//      glRotatef(direction,0.0,0.0,1.0);
-//       glRotatef(0,0,0,1);
-    /* draw shadow */
-   glEnable(GL_TEXTURE_2D);
-   glBindTexture(GL_TEXTURE_2D,textures[SHADOW_TEXTURE]);   
-      
-   glBegin(GL_QUADS);
-         
-          shadow_width=(1.5+(-gs.pigz/5.0))/2.0;
-      
-          glNormal3f(0.0,0.0,1.0);
-   
-          glTexCoord2f(0.0, 0.0);
-          glVertex3f(-0.75,-shadow_width,-gs.pigz+0.1);
-      
-          glTexCoord2f(1.0, 0.0);
-          glVertex3f(0.75,-shadow_width,-gs.pigz+0.1);
-      
-          glTexCoord2f(1.0, 1.0);
-          glVertex3f(0.75,shadow_width,-gs.pigz+0.1);
-      
-          glTexCoord2f(0.0, 1.0);
-          glVertex3f(-0.75,shadow_width,-gs.pigz+0.1);         
-      
-      glEnd();
-      
-      
-      if ((draw_splash) && (gs.pigz<0.75)) {
-//	 printf("pigz: %f\n",gs.pigz);
-         glBindTexture(GL_TEXTURE_2D,textures[SPLASH_TEXTURE]);   
-      
-         glBegin(GL_QUADS);
-               
-          glNormal3f(0.0,0.0,1.0);
-   
-          glTexCoord2f(0.0, 0.0);
-          glVertex3f(-8.0,-1.0,-0.85);
-      
-          glTexCoord2f(1.0, 0.0);
-          glVertex3f(-8.0,1.0,-0.85);
-      
-          glTexCoord2f(1.0, 1.0);
-          glVertex3f(-1.45,1.0,-0.85);
-      
-          glTexCoord2f(0.0, 1.0);
-          glVertex3f(-1.25,-1.0,-0.85);         
-         glEnd();
-      }
-      if (turn_right) {
-         glRotatef(20,1.0,0.0,0.0);
-      }
-      if (turn_left) {
-	 glRotatef(-20,1.0,0.0,0.0);
-      }
-      glCallList(spaceships[0]);
-      
-      glPopMatrix();
-      
-      /*
-      draw_guinea_pig(leonard,0,0,0,0);
-       */
-   }
-   
-   
-//   printf("%.2f %.2f %.2f %i %i\n",gs.pigx,gs.pigy,gs.pigz,gs.gridx,gs.gridy);
-   
-
-   if (show_menu) {
-      glDisable(GL_LIGHTING);
-//      glViewport(0,0,640,480);
-      glMatrixMode(GL_PROJECTION);
-      glLoadIdentity();
-      gluOrtho2D(0,320,0,200);
-      glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity();  
-
-      
-      glBegin(GL_QUADS);
-        glNormal3f(0,0,1);
-        glVertex3f(5,5,-0.1);
-        glVertex3f(100,5,-0.1);
-        glVertex3f(100,100,-0.1);
-        glVertex3f(5,100,-0.1);
-      glEnd();
-      
-      glColor3f(1.0,0.0,0.0);
-            glRasterPos3f(5,5,0);
-      vmwGLString("A VMW SOFTWARE PRODUCTION",font,16,32,2);
-       
-      reshape(640,480);
-//      gluPerspective(60.0,(GLfloat)640/(GLfloat)480,1.0,100.0);
-//      glMatrixMode(GL_MODELVIEW);
-   }
-   
-   
-   glFlush();
-   SDL_GL_SwapBuffers();
-
    glDisable(GL_LIGHTING);
-   glDisable(GL_TEXTURE_2D);
-#endif
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+   gluOrtho2D(0,320,0,200);
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+   glColor3f(1.0,0.0,0.0);
+   glRasterPos3f(5,170,0);
+   vmwGLString("THE MEERSCHWEINCHEN SYSTEM",font,16,32,2);
+       
+    glViewport(0,0,(GLsizei)width,(GLsizei)height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60.0,(GLfloat)width/(GLfloat)height,1.0,200000.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();   
+       
+       
+       
+       glFlush();
+       SDL_GL_SwapBuffers();
+
+       glDisable(GL_LIGHTING);
+       glDisable(GL_TEXTURE_2D);
+
+       keyspressed=check_keyboard(&alpha,0);
+       if (keyspressed&ESC_PRESSED) {
+          done=1;
+       }
+       
+       switch(alpha) {
+	      
+          case 'k':  camera_direction+=(10.0*PI)/180;
+		     if (camera_direction>2*PI) camera_direction-=2*PI;
+		     camerax=100*sin(camera_direction);
+		     cameray=100*cos(camera_direction);
+		     break;
+          case 'j':  camera_direction-=(10.0*PI)/180;
+		     if (camera_direction<0.0) camera_direction+=2*PI;
+		     camerax=100*sin(camera_direction);
+		     cameray=100*cos(camera_direction);
+		     break;
+	  case 'm':
+		     cameraz-=0.5;
+		     break;
+	  case 'i':
+                     cameraz+=0.5;
+		     break;
+       }
+		 
+      
+    }
 }

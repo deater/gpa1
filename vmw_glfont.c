@@ -10,6 +10,7 @@
 /*    has to have a smaller (4x5) version of the  */
 /*    font from chars 0-127 mirrored at 128-255   */
 
+GLubyte *font;
 
 GLubyte high,low;
 

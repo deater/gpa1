@@ -1,1 +1,1 @@
-void do_story(void);
+void do_story(int width,int height);

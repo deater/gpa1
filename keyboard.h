@@ -6,4 +6,4 @@
 #define Z_PRESSED    32
 #define ESC_PRESSED  64
 
-int check_keyboard(char *alphanum);
+int check_keyboard(char *alphanum,int reset);
