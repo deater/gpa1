@@ -8,3 +8,5 @@
 #define BROWN_TEXTURE             7
 #define BROWN_WHITE_BROWN_TEXTURE 8
 #define FLESH_TEXTURE             9
+#define OCEAN_TEXTURE		 10
+#define MOUNTAIN_TEXTURE	 11

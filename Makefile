@@ -5,8 +5,8 @@ L_FLAGS = -L/usr/X11R6/lib -lGL -lGLU  -lX11 -lm -lICE -lXmu -lSDL
 
 all:	gp1
 
-gp1:	main.o guinea_pig.o matrix_math.o opener.o vmw_glfont.o vmw_texture.o
-	$(CC) -o gp1 main.o guinea_pig.o matrix_math.o opener.o vmw_glfont.o vmw_texture.o $(L_FLAGS)
+gp1:	main.o guinea_pig.o matrix_math.o opener.o terrain.o vmw_glfont.o vmw_texture.o
+	$(CC) -o gp1 main.o guinea_pig.o matrix_math.o opener.o terrain.o vmw_glfont.o vmw_texture.o $(L_FLAGS)
 
 main.o:	main.c
 	$(CC) $(C_FLAGS) -c main.c
@@ -19,6 +19,9 @@ matrix_math.o:	matrix_math.c
 
 opener.o:	opener.c
 	$(CC) $(C_FLAGS) -c opener.c
+
+terrain.o:	terrain.c
+	$(CC) $(C_FLAGS) -c terrain.c
 
 vmw_glfont.o:	vmw_glfont.c
 	$(CC) $(C_FLAGS) -c vmw_glfont.c

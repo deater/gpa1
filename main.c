@@ -12,6 +12,9 @@
 #include "guinea_pig.h"
 #include "matrix_math.h"
 
+#include "textures.h"
+#include "terrain.h"
+
 #define PI 3.141592653589793238462643383279502884197169399
   
 
@@ -23,11 +26,15 @@ int use_textures=1;
 int use_lighting=1;
 
    GLuint leonard;
+   GLuint terrain[8];
 
-GLuint textures[10];
+
+GLuint textures[12];
 
 
 float direction=0.0,pigx=0.0,pigy=0.0,pigz=1.0;
+
+int gridx=20,gridy=20;
 
 float camera_direction=90*(180.0/PI),camerax=-10.0,cameray=0,cameraz=5.0;
 
@@ -37,17 +44,6 @@ int done=0;
 void parse_config(void) {
    
 }
-
-#define CARROT_TEXTURE            0
-#define EYE_TEXTURE               1
-#define ROBOT_FACE_TEXTURE        2
-#define GRASS_TEXTURE             3
-#define LEAVES_TEXTURE            4
-#define NOSE_TEXTURE              5
-#define SKY_TEXTURE               6
-#define BROWN_TEXTURE             7
-#define BROWN_WHITE_BROWN_TEXTURE 8
-#define FLESH_TEXTURE             9
 
 void LoadTexture(int x,int y,char *filename,int which_one,int transparent,
 		 int repeat_type) {
@@ -66,12 +62,52 @@ void LoadTexture(int x,int y,char *filename,int which_one,int transparent,
 		 y ,0,GL_RGBA,GL_UNSIGNED_BYTE,texture);
    
 }
+
    
+#define D2R(x) ((x*PI)/180.0)
+
+float sphere[28][36][3];
+
+int world_map[40][40];
+
+void setup_map(void) {
+
+   int i,j;
+   
+   for(i=0;i<40;i++) {
+      for(j=0;j<40;j++) {
+	 if ((i<20) &&(j<20)) world_map[i][j]=GRASS_TERRAIN;
+	 else if ((i>20) && (j>20)) world_map[i][j]=MOUNTAIN_TERRAIN;
+	 else world_map[i][j]=OCEAN_TERRAIN;
+      }
+   }
+}
+
+void setup_sphere(void) {
+   
+
+   float rho=204.5,theta=0,phi=0;
+   
+   int i,j;
+   
+   for(i=0;i<28;i++) {
+      phi=((float)i-14.5)*0.4;
+      for(j=0;j<36;j++) {
+	 theta=j*10.0;
+         sphere[i][j][0]=rho*sin(D2R(phi))*cos(D2R(theta));
+         sphere[i][j][1]=rho*sin(D2R(phi))*sin(D2R(theta));
+	 sphere[i][j][2]=rho*cos(D2R(phi))-204.31;
+      }
+
+   }
+}
+
+
 void LoadTextures(void) {
 
    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
    
-   glGenTextures(10,textures);  
+   glGenTextures(12,textures);  
    
    LoadTexture(64,64,"./textures/carrot.amg",CARROT_TEXTURE,0,GL_REPEAT);
    LoadTexture(64,64,"./textures/eye.amg",EYE_TEXTURE,0,GL_CLAMP);
@@ -83,6 +119,8 @@ void LoadTextures(void) {
    LoadTexture(64,64,"./textures/brown.amg",BROWN_TEXTURE,0,GL_REPEAT);
    LoadTexture(64,64,"./textures/bwb.amg",BROWN_WHITE_BROWN_TEXTURE,0,GL_CLAMP);
    LoadTexture(64,64,"./textures/flesh.amg",FLESH_TEXTURE,0,GL_CLAMP);
+   LoadTexture(64,64,"./textures/ocean.amg",OCEAN_TEXTURE,0,GL_REPEAT);
+   LoadTexture(64,64,"./textures/mountain.amg",MOUNTAIN_TEXTURE,0,GL_CLAMP);
 }
 
 GLubyte *font;
@@ -91,6 +129,9 @@ GLubyte *font;
 void init(void) {
 //   glViewport(0,0,640,480);
 
+   setup_map();
+
+   
    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
    font=vmwLoadFont("./fonts/vmw.fnt",8,16,128,2);
    glClearColor(0.0,0.0,0.0,0.0);
@@ -104,16 +145,18 @@ void init(void) {
    
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
-   gluPerspective(60.0f,(GLfloat)640/(GLfloat)480,0.1f,100.0f);
+//   gluPerspective(60.0f,(GLfloat)640/(GLfloat)480,0.1f,100.0f);
    
    LoadTextures();
-  
+   setup_terrain();  
 }
 
   
 
 
 void draw_carrot(float carrotx,float carroty,float carrotz,float direction) {
+   
+   float normalx,normaly,normalz;
    
    glPushMatrix();
 
@@ -125,24 +168,55 @@ void draw_carrot(float carrotx,float carroty,float carrotz,float direction) {
    glBindTexture(GL_TEXTURE_2D,textures[CARROT_TEXTURE]);      
    glBegin(GL_TRIANGLES);
     
+      calculate_normal(0.0,-0.5,0.5,
+		       2.0,0,0.5,
+                       0.0,0.5,0.5,
+			&normalx,&normaly,&normalz);
+      glNormal3f(normalx,normaly,normalz);
+   
       glVertex3f(0.0,-0.5,0.5);
       glVertex3f(2.0,0,0.5);
       glVertex3f(0.0,0.5,0.5);
    
+      calculate_normal(0.0,0.5,0.5,
+		       2.0,0,0.5,
+                       0.0,0.5,-0.5,
+			&normalx,&normaly,&normalz);
+      glNormal3f(normalx,normaly,normalz);
+   
+   
       glVertex3f(0.0,0.5,0.5);
       glVertex3f(2.0,0,0.5);
       glVertex3f(0.0,0.5,-0.5);
+   
+         calculate_normal(0.0,0.5,-0.5,
+		       2.0,0,0.5,
+                       0.0,-0.5,-0.5,
+			&normalx,&normaly,&normalz);
+      glNormal3f(normalx,normaly,normalz);
+   
    
       glVertex3f(0.0,0.5,-0.5);
       glVertex3f(2.0,0,0.5);
       glVertex3f(0.0,-0.5,-0.5);
    
    
+         calculate_normal(0.0,-0.5,-0.5,
+		       2.0,0,0.5,
+                       0.0,-0.5,0.5,
+			&normalx,&normaly,&normalz);
+      glNormal3f(normalx,normaly,normalz);
       glVertex3f(0.0,-0.5,-0.5);
       glVertex3f(2.0,0,0.5);
       glVertex3f(0.0,-0.5,0.5);
    
       /* TOP */
+   
+         calculate_normal(0.0,-0.5,0.5,
+		       0.0,0.0,0.5,
+                       0.0,0.5,-0.5,
+			&normalx,&normaly,&normalz);
+      glNormal3f(normalx,normaly,normalz);
    
       glVertex3f(0.0,-0.5,0.5);
       glVertex3f(0.0,0.5,0.5);
@@ -260,7 +334,7 @@ void draw_robo_pig(float pigx,float pigy,float pigz,float direction) {
 
 void display(void) {
    
-   int i,j;
+   int i,j,distance_seen,land_type;
      GLfloat light_position[]={0.0,0.0,10.0,0.0
      };
    
@@ -322,110 +396,113 @@ void display(void) {
    glBindTexture(GL_TEXTURE_2D,textures[SKY_TEXTURE]);
    glBegin(GL_QUADS);
    
+#define SKY_DISTANCE 60
+   
           /* Back */
       glNormal3f(-1.0,0.0,0.0);
    
       glTexCoord2f(0.0, 0.0);
-      glVertex3f(20,-20,-20);
+      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
       glTexCoord2f(0.0, 1.0);
-      glVertex3f(20,-20,20);
+      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
       glTexCoord2f(1.0, 1.0);
-      glVertex3f(20,20,20);
+      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
       glTexCoord2f(1.0, 0.0);
-      glVertex3f(20,20,-20);
+      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
    
          /* Right */
    
       glNormal3f(0.0,1.0,0.0);
    
       glTexCoord2f(0.0, 0.0);
-      glVertex3f(20,-20,20);
+      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
       glTexCoord2f(0.0, 1.0);
-      glVertex3f(20,-20,-20);
+      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
       glTexCoord2f(1.0, 1.0);
-      glVertex3f(-20,-20,-20);
+      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
       glTexCoord2f(1.0, 0.0);
-      glVertex3f(-20,-20,20);
+      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
    
          /* Front */
       glNormal3f(1.0,0.0,0.0);
    
       glTexCoord2f(0.0, 0.0);
-      glVertex3f(-20,-20,20);
+      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
       glTexCoord2f(0.0, 1.0);
-      glVertex3f(-20,-20,-20);
+      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
       glTexCoord2f(1.0, 1.0);
-      glVertex3f(-20,20,-20);
+      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
       glTexCoord2f(1.0, 0.0);
-      glVertex3f(-20,20,20);
+      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
    
          /* Left */
     
       glNormal3f(0.0,-1.0,0.0);
    
       glTexCoord2f(0.0, 0.0);
-      glVertex3f(-20,20,20);
+      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
       glTexCoord2f(0.0, 1.0);
-      glVertex3f(-20,20,-20);
+      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
       glTexCoord2f(1.0, 1.0);
-      glVertex3f(20,20,-20);
+      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
       glTexCoord2f(1.0, 0.0);
-      glVertex3f(20,20,20);
+      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
    
    
           /* top */
       glNormal3f(0.0,0.0,-1.0);
    
       glTexCoord2f(0.0, 0.0);
-      glVertex3f(20,20,20);
+      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
       glTexCoord2f(0.0, 1.0);
-      glVertex3f(20,-20,20);
+      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
       glTexCoord2f(1.0, 1.0);
-      glVertex3f(-20,-20,20);
+      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,SKY_DISTANCE);
       glTexCoord2f(1.0, 0.0);
-      glVertex3f(-20,20,20);
+      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
    
              /* bottom */
       glNormal3f(0.0,0.0,1.0);
    
       glTexCoord2f(0.0, 0.0);
-      glVertex3f(20,20,-20);
+      glVertex3f(SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
       glTexCoord2f(0.0, 1.0);
-      glVertex3f(20,-20,-20);
+      glVertex3f(SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
       glTexCoord2f(1.0, 1.0);
-      glVertex3f(-20,-20,-20);
+      glVertex3f(-SKY_DISTANCE,-SKY_DISTANCE,-SKY_DISTANCE);
       glTexCoord2f(1.0, 0.0);
-      glVertex3f(-20,20,-20);
+      glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,-SKY_DISTANCE);
    
    glEnd();
 
+   glEnable(GL_TEXTURE_2D);
    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
        /* Draw grassy field */   
-   glBindTexture(GL_TEXTURE_2D,textures[GRASS_TEXTURE]);      
 
-   glBegin(GL_QUADS);
-      for(i=-10;i<10;i++) {
-         for (j=-10;j<10;j++) {
-	     glNormal3f(0.0,0.0,1.0);
+
    
-             glTexCoord2f(0.0, 0.0);
-             glVertex3f(i*2,j*2,0);
-             
-	     glTexCoord2f(0.0, 1.0);
-             glVertex3f(i*2,(j*2)+2,0);
-      
-	     glTexCoord2f(1.0, 1.0);
-             glVertex3f((i*2)+2,(j*2)+2,0);
+      /* 25.5 = "radius of world" */
+   distance_seen=(int)sqrt(2*25.5*cameraz);
+//   printf("DS=%i\n",distance_seen);   
+   
+
+      for(i=0;i<=distance_seen*2;i++) {
+         for(j=0;j<=distance_seen*2;j++) {
 	    
-             glTexCoord2f(1.0, 0.0);
-             glVertex3f( (i*2)+2,(j*2),0);
+	    land_type=world_map[ (gridx+(i-distance_seen))%40]
+			       [ (gridy+(j-distance_seen))%40];
+
+	    glPushMatrix();
+	    glTranslatef( (i-distance_seen)*4+2,(j-distance_seen)*4+2,0); 
+            glCallList(terrain[land_type]);
+	    glPopMatrix();
+
 	 }
       }
-   glEnd();
-   glDisable(GL_TEXTURE_2D);
+
    
    
-   draw_carrot(-4.0,3.0,0.5,90);
+//   draw_carrot(-4.0,3.0,0.5,90);
    glPopMatrix();
 
    
@@ -436,7 +513,7 @@ void display(void) {
    
    draw_guinea_pig(leonard,0,0,0,0);
    
-//   printf("%.2f %.2f %.2f\n",pigx,pigy,pigz);
+//   printf("%.2f %.2f %.2f %i %i\n",pigx,pigy,pigz,gridx,gridy);
    
    
    
@@ -484,6 +561,11 @@ int check_keyboard(void) {
 	  return 1;
        }
 
+       if (event.type == SDL_VIDEORESIZE) {
+	  printf("RESIZE\b");
+	  
+	  
+       }
        if (event.type == SDL_KEYUP) {
 	  printf("UP\n");
 	  keypressed=event.key.keysym.sym;
@@ -534,11 +616,62 @@ int check_keyboard(void) {
                              return 1;
            case SDLK_UP:     up_down=1;
 	                     up_time=SDL_GetTicks();
+	     
 	                     pigy+=sin( (direction*PI)/180.0);
                              pigx+=cos( (direction*PI)/180.0);
+	     
+	                     if (pigx>=2.0) { 
+				gridx++; 
+				pigx-=4.0;
+				
+			     }
+	                     if (pigx<=-2.0) {
+				gridx--;
+				pigx+=4.0;
+			     }
+	                     if (pigy>=2.0) {
+				gridy++;
+				pigy-=4.0;
+			     }
+	                     if (pigy<=-2.0) {
+				gridy--;
+				pigy+=4.0;
+			     }
+	      
+	                     if (gridx>=40) gridx=0;
+	                     if (gridx<0) gridx=39;
+	                      
+	                     if (gridy>=40) gridy=0;
+	                     if (gridy<0) gridy=39;
+	    
 	                     return 1;
 	   case SDLK_DOWN:   pigy-=sin( (direction*PI)/180.0);
                              pigx-=cos( (direction*PI)/180.0);
+	     
+	     	             if (pigx>=2.0) { 
+				gridx++; 
+				pigx-=4.0;
+				
+			     }
+	                     if (pigx<=-2.0) {
+				gridx--;
+				pigx+=4.0;
+			     }
+	                     if (pigy>=2.0) {
+				gridy++;
+				pigy-=4.0;
+			     }
+	                     if (pigy<=-2.0) {
+				gridy--;
+				pigy+=4.0;
+			     }
+	      
+	                     if (gridx>=40) gridx=0;
+	                     if (gridx<0) gridx=39;
+	                      
+	                     if (gridy>=40) gridy=0;
+	                     if (gridy<0) gridy=39;
+	     
                              return 1;
 	  }
        }
@@ -550,7 +683,19 @@ int main(int argc, char **argv) {
 
 
    int frames=0,msecs=0,old_msecs=0;
-      
+   int xsize=640,ysize=480;
+
+   if (argc==2) {
+      xsize=320;
+      ysize=200;
+   }
+   
+   if (argc==3) {
+      xsize=1024;
+      ysize=768;
+   }
+   
+   
    parse_config();
    
    
@@ -561,7 +706,7 @@ int main(int argc, char **argv) {
    }
    
        /* Create a 640x480 OpenGL screen */
-   if ( SDL_SetVideoMode(640, 480, 0, SDL_OPENGL) == NULL ) {
+   if ( SDL_SetVideoMode(xsize, ysize, 0, SDL_OPENGL) == NULL ) {
       printf("Unable to create OpenGL screen: %s\n", SDL_GetError());
       SDL_Quit();
       return -2;
@@ -570,7 +715,7 @@ int main(int argc, char **argv) {
    SDL_WM_SetCaption("Guinea Pig Adventure...",NULL);
    
    init();
-   reshape(640,480);
+   reshape(xsize,ysize);
    
 //   display();
  
