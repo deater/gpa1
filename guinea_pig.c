@@ -8,385 +8,16 @@
 #include "vmw_texture.h"
 #include "vmw_glfont.h"
 
+#include "matrix_math.h"
+
+#include "textures.h"
+
 #define PI 3.141592653589793238462643383279502884197169399
-  
 
-#define checkImageWidth 64
-#define checkImageHeight 64
+extern int use_lighting;
+extern int use_textures;
 
-
-static GLubyte texture1[checkImageHeight][checkImageWidth][4];
-static GLubyte texture2[checkImageHeight][checkImageWidth][4];
-
-static GLubyte *texture3,*eye_texture,*nose_texture,*leaf_texture;
-
-
-static GLuint texName[6];
-
-
-float direction=0.0,pigx=0.0,pigy=0.0,pigz=1.0;
-
-int done=0;
-
-
-void LoadTextures(void) {
-   int i,j;
-
-
-   
-   
-   
-   texture3=vmwLoadTexture(64,64,texture3,"bob.amg",0);
-   
-   eye_texture=vmwLoadTexture(16,16,eye_texture,"eye.amg",0);
-   
-   nose_texture=vmwLoadTexture(16,16,nose_texture,"nose.amg",0);
-   
-   leaf_texture=vmwLoadTexture(64,64,leaf_texture,"leaves.amg",1);
-   
-   
-   for(i=0;i<checkImageHeight;i++) {
-      for (j=0;j<checkImageWidth;j++) {
-      texture1[i][j][0]=(GLubyte) 0xcd;
-      texture1[i][j][1]=(GLubyte) 0x81;
-      texture1[i][j][2]=(GLubyte) 0x62;
-      texture1[i][j][3]=(GLubyte) 255;
-	 
-      if ((i<20) || (i>40)) {
-         texture2[i][j][0]=(GLubyte) 0xcd;
-         texture2[i][j][1]=(GLubyte) 0x81;
-         texture2[i][j][2]=(GLubyte) 0x62;
-      }
-	 
-      else {
-	 texture2[i][j][0]=(GLubyte) 0xFF;
-         texture2[i][j][1]=(GLubyte) 0xFF;
-         texture2[i][j][2]=(GLubyte) 0xFF;
-      }
-      texture2[i][j][3]=(GLubyte) 255;
-	 
-	 
-	 
-      }
-   }
-}
-
-GLubyte *font;
-
-GLubyte big_f[24]={
-   0xc0,0x00,
-        0xc0,0x00,
-        0xc0,0x00,
-        0xc0,0x00,
-        0xc0,0x00,
-        0xc0,0x00,
-        0xc0,0x00,
-        0xc0,0x00,
-        0xc0,0x00,
-        0xc0,0x00,
-        0xc0,0x00,
-        0xc0,0x00,
-};
-
-
-void init(void) {
-//   glViewport(0,0,640,480);
-
-   glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-   font=vmwLoadFont("vmw.fnt",8,16,128,2);
-   glClearColor(0.0,0.0,0.0,0.0);
-   glClearDepth(1.0);
-   glShadeModel(GL_SMOOTH);
-//   glEnable(GL_LIGHTING);
-//   glEnable(GL_LIGHT0);
-   glEnable(GL_DEPTH_TEST);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-   
-   glMatrixMode(GL_PROJECTION);
-   glLoadIdentity();
-//   gluPerspective(45.0f,(GLfloat)640/(GLfloat)480,0.1f,100.0f);
-   
-   LoadTextures();
-   glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-   
-   glGenTextures(6,texName);
-   
-   glBindTexture(GL_TEXTURE_2D,texName[0]);
-   
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, checkImageWidth,
-		checkImageHeight,0,GL_RGBA,GL_UNSIGNED_BYTE,texture1);
-   
-   glBindTexture(GL_TEXTURE_2D,texName[1]);
-   
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, checkImageWidth,
-		checkImageHeight,0,GL_RGBA,GL_UNSIGNED_BYTE,texture2);
-   
-   glBindTexture(GL_TEXTURE_2D,texName[2]);
-   
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, checkImageWidth,
-		checkImageHeight,0,GL_RGBA,GL_UNSIGNED_BYTE,texture3);
-      
-   glBindTexture(GL_TEXTURE_2D,texName[3]);
-   
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16,
-		16,0,GL_RGBA,GL_UNSIGNED_BYTE,eye_texture);
-      
-   glBindTexture(GL_TEXTURE_2D,texName[4]);
-   
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16,
-		16,0,GL_RGBA,GL_UNSIGNED_BYTE,nose_texture);
-   
-   
-      glBindTexture(GL_TEXTURE_2D,texName[5]);
-   
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64,
-		64,0,GL_RGBA,GL_UNSIGNED_BYTE,leaf_texture);
-}
-
-
-int triangle;
-
-
-void opener() {
- 
-
-
-    int i,frames=0,msecs=0,startmsecs=0;
-   
-    float  red1x,red1y;
-      
-
-   
-    GLfloat light_position[]={0.0,0.0,10.0,0.0
-    };
-   
-    GLfloat lmodel_ambient[]={0.9,0.9,0.9,1.0
-    };
-   
-   
-    GLfloat white_light[]={1.0,1.0,1.0,1.0
-    };
-   
-
-    GLfloat red_material[2][4]={
-	 {0.2,0.0,0.0,1.0},  /* Ambient */
-         {0.9,0.1,0.1,1.0}   /* Diffuse */
-    };
-   
-    GLfloat green_material[2][4]={
-   	 {0.0,0.2,0.0,1.0},  /* Ambient */
-         {0.1,0.9,0.1,1.0}   /* Diffuse */
-    };
-   
-    GLfloat blue_material[2][4]={
-   	 {0.0,0.0,0.2,1.0},  /* Ambient */
-         {0.1,0.1,0.9,1.0}   /* Diffuse */
-    };
-   
-    GLfloat no_mat[]={0.0,0.0,0.0,1.0
-    };
-    
-    GLfloat no_shiny[]={0.0
-    };
-   
-
-
-    glLoadIdentity();
-    gluLookAt(-0.00,0.0,15.0,
-	     0.0,0.0,0.0,
-	     0.0,1.0,1.0);
-
-   
-
-   
-   triangle=glGenLists(1);
-   glNewList(triangle,GL_COMPILE);
-   
-   glBegin(GL_TRIANGLES);
-
-   glNormal3f(0.0,0.0,1.0);
-   glVertex3f(-2.0,2.0,0.5);
-   glVertex3f( 2.0,2.0,0.5);
-   glVertex3f( 0.0,-2.0,0.5);
-   
-   glEnd();
-   
-   glBegin(GL_QUADS);
-   
-   glNormal3f(0.0,1.0,0.0);
-   glVertex3f(-2.0, 2.0, 0.5);
-   glVertex3f(-2.0, 2.0,-0.5);
-   glVertex3f( 2.0, 2.0,-0.5);
-   glVertex3f( 2.0, 2.0, 0.5);
-   
-   
-   glNormal3f( 1.4142,-1.4142,0.0);
-   glVertex3f( 2.0, 2.0, 0.5);
-   glVertex3f( 2.0, 2.0,-0.5);
-   glVertex3f( 0.0,-2.0,-0.5);
-   glVertex3f( 0.0,-2.0, 0.5);
-   
-   glNormal3f(-1.4142,-1.4142,0.0);
-   glVertex3f( 0.0,-2.0, 0.5);
-   glVertex3f( 0.0,-2.0,-0.5);
-   glVertex3f(-2.0, 2.0,-0.5);
-   glVertex3f(-2.0, 2.0, 0.5);
-   
-   glEnd();
-   
-   glBegin(GL_TRIANGLES);
-   
-   glNormal3f(0.0,0.0,-1.0);
-   glVertex3f(-2.0,  2.0, -0.5);
-   glVertex3f( 2.0,  2.0, -0.5);
-   glVertex3f( 0.0, -2.0, -0.5);
-   
-   glEnd();
-
-   glEndList();
-
-
-   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-   glLightfv(GL_LIGHT0, GL_DIFFUSE, white_light);
-   glLightfv(GL_LIGHT0, GL_SPECULAR,white_light);
-
-/*   
-   glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
-   glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
-   glLightfv(GL_LIGHT1, GL_SPECULAR,white_light);
-*/  
-   
- 
-   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
-   
-   glEnable(GL_LIGHTING);
-   
-   glEnable(GL_LIGHT0);
-//   glEnable(GL_LIGHT1);
-   glEnable(GL_DEPTH_TEST);
-   
-
-   red1x=-20.0; red1y=0.0;
-
-   startmsecs=SDL_GetTicks();
-
-    for(i=180;i<361;i++) {
-       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      
-
-          /* Red */
-       glColor3f(1.0,0.0,0.0);
-       glMaterialfv(GL_FRONT,GL_AMBIENT,  red_material[0]);
-       glMaterialfv(GL_FRONT,GL_DIFFUSE, red_material[1]);
-       glMaterialfv(GL_FRONT,GL_SPECULAR, no_mat);
-       glMaterialfv(GL_FRONT,GL_SHININESS, no_shiny);
-       glMaterialfv(GL_FRONT,GL_EMISSION, no_mat);
-      
-       glPushMatrix();
-       glTranslatef(-4 - ((360.0-i)/18.0),0,0.0);
-       glRotatef(i,1,1,1);
-       glCallList(triangle);
-       glPopMatrix();
-      
-          /* Blue */
-       glColor3f(0.0,0.0,1.0);
-      
-       glMaterialfv(GL_FRONT,GL_AMBIENT, blue_material[0]);
-       glMaterialfv(GL_FRONT,GL_DIFFUSE, blue_material[1]);
-       glMaterialfv(GL_FRONT,GL_SPECULAR, no_mat);
-       glMaterialfv(GL_FRONT,GL_SHININESS, no_shiny);
-       glMaterialfv(GL_FRONT,GL_EMISSION, no_mat);
-      
-       glPushMatrix();
-       glTranslatef(0,((360.0-i)/18.0),0.0);
-       glRotatef(i,1,1,1);      
-       glCallList(triangle);
-       glPopMatrix();
-       
-       glPushMatrix();
-       glTranslatef(4+((360.0-i)/18.0),0+((360.0-i)/18.0),0.0);
-       glRotatef(i,1,1,1);      
-       glCallList(triangle);
-       glPopMatrix();
-       
-          /* Green */
-       glColor3f(0.0,0.0,1.0);
-      
-       glMaterialfv(GL_FRONT,GL_AMBIENT, green_material[0]);
-       glMaterialfv(GL_FRONT,GL_DIFFUSE, green_material[1]);
-       glMaterialfv(GL_FRONT,GL_SPECULAR, no_mat);
-       glMaterialfv(GL_FRONT,GL_SHININESS, no_shiny);
-       glMaterialfv(GL_FRONT,GL_EMISSION, no_mat);
-      
-       glPushMatrix();
-       glTranslatef(-2,-((360.0-i)/18.0),0.0);
-       glRotatef(180,1,0,0);
-       glRotatef(i,1,1,1);      
-       glCallList(triangle);
-       glPopMatrix();
-       
-       glPushMatrix();
-       glTranslatef(2+((360.0-i)/18.0),-((360.0-i)/18.0),0.0);
-       glRotatef(180,1,0,0);
-       glRotatef(i,1,1,1);      
-       glCallList(triangle);
-       glPopMatrix();
-      
-      
-
-            
-      glFlush();
-
-      SDL_GL_SwapBuffers();
-      frames++;
-
-      if (frames%10==0) {
-	 msecs=SDL_GetTicks();
-         printf("FPS=%f\n",((float) frames)/((msecs-startmsecs)/1000.0));
-      }
-      
-       
-//      usleep(1000);
-   }
-
-   glDisable(GL_LIGHTING);
-
-   glColor3f(1.0,1.0,1.0);
-
-   glRasterPos3f(-2.45,-1.5,10);
-   
-   vmwGLString("A VMW SOFTWARE PRODUCTION",font,16,32,2);
-   
-   glFlush();
-   SDL_GL_SwapBuffers();
-}
-
-
+extern GLuint textures[];
 
 
 float pig_cylinder[16][2]={
@@ -819,431 +450,293 @@ int pig_feet_triangles[6][4]={
 };
   
 
+void draw_guinea_pig(GLuint which_one, float pigx,float pigy,float pigz,
+		     float direction) {
 
-void draw_carrot(float carrotx,float carroty,float carrotz,float direction) {
    
-   glPushMatrix();
+//    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+   
+    glPushMatrix();
 
-   glTranslatef(carrotx,carroty,carrotz);
-   glRotatef(direction,0.0,0.0,1.0);
-   
-   glColor3f(0.9961,0.6445,0);
-   
-   glBegin(GL_TRIANGLES);
-    
-      glVertex3f(0.0,-0.5,0.5);
-      glVertex3f(2.0,0,0.5);
-      glVertex3f(0.0,0.5,0.5);
-   
-      glVertex3f(0.0,0.5,0.5);
-      glVertex3f(2.0,0,0.5);
-      glVertex3f(0.0,0.5,-0.5);
-   
-      glVertex3f(0.0,0.5,-0.5);
-      glVertex3f(2.0,0,0.5);
-      glVertex3f(0.0,-0.5,-0.5);
-   
-   
-      glVertex3f(0.0,-0.5,-0.5);
-      glVertex3f(2.0,0,0.5);
-      glVertex3f(0.0,-0.5,0.5);
-   
-      /* TOP */
-   
-      glVertex3f(0.0,-0.5,0.5);
-      glVertex3f(0.0,0.5,0.5);
-      glVertex3f(0.0,0.5,-0.5);
-   
-   
-      glVertex3f(0.0,0.5,-0.5);
-      glVertex3f(0.0,-0.5,-0.5);
-      glVertex3f(0.0,-0.5,0.5);
-   
-   
-   glEnd();
-   
+    glTranslatef(pigx,pigy,pigz);
 
-   glEnable(GL_TEXTURE_2D);
-   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-   
-   glBindTexture(GL_TEXTURE_2D,texName[5]);   
-     glBegin(GL_QUADS);
-   
-     glTexCoord2f(0.0,0.0);
-     glVertex3f(0.0,0.0,0.5);
-     glTexCoord2f(0.0,1.0);
-     glVertex3f(0.0,0.0,-0.5);
-     glTexCoord2f(1.0,1.0);
-     glVertex3f(-2.0,0.0,-0.5);
-     glTexCoord2f(1.0,0.0);
-     glVertex3f(-2.0,0.0,0.5);
+    glRotatef(direction,0.0,0.0,1.0);
+    glRotatef(90,1,0,0);
 
-     glTexCoord2f(0.0,0.0);
-     glVertex3f(0.0,0.5,0.0);
-     glTexCoord2f(0.0,1.0);
-     glVertex3f(0.0,-0.5,0.5);
-     glTexCoord2f(1.0,1.0);
-     glVertex3f(-2.0,-0.5,0.0);
-     glTexCoord2f(1.0,0.0);
-     glVertex3f(-2.0,0.5,0.0);
+    glCallList(which_one);
    
-   
-   
-     glEnd();
-   
-   
-   glDisable(GL_TEXTURE_2D);
-   
-   
-   
-   
-   glPopMatrix();
-   
+    glPopMatrix();
 }
 
-void draw_good_pig(float pigx,float pigy,float pigz,float direction) {
-   
-   int i,j,k;
+    GLfloat red_material[2][4]={
+	 {0.2,0.0,0.0,1.0},  /* Ambient */
+                {0.9,0.1,0.1,1.0}   /* Diffuse */
+    };
+    
+    GLfloat green_material[2][4]={
+	 {0.0,0.2,0.0,1.0},  /* Ambient */
+                {0.1,0.9,0.1,1.0}   /* Diffuse */
+    };
+    
+    GLfloat blue_material[2][4]={
+	 {0.0,0.0,0.2,1.0},  /* Ambient */
+                {0.1,0.1,0.9,1.0}   /* Diffuse */
+    };
+    
+    GLfloat no_mat[]={0.0,0.0,0.0,1.0
+    };
 
-   
-   glEnable(GL_TEXTURE_2D);
-   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-   
-   glPushMatrix();
+    GLfloat no_shiny[]={0.0
+    };
 
-   
-   glTranslatef(pigx,pigy,pigz);
 
-   glRotatef(direction,0.0,0.0,1.0);
-   glRotatef(90,1,0,0);
+GLuint setup_pig_list(int color, int texture) {
    
-      /* Draw body-tube */
-   glColor3f(0.803,0.5,0.384);
+    int i,j,k;
+    float normalx,normaly,normalz;
+   
+    GLuint display_list;
+   
+   
+    display_list=glGenLists(1);
+    glNewList(display_list,GL_COMPILE);
+   
+       /* Draw body-tube */
+       
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,textures[BROWN_WHITE_BROWN_TEXTURE]);
+    glColor3f(0.803,0.5,0.384);
+ 
+    glBegin(GL_TRIANGLES);   
+   
+       for(i=0;i<16;i++) {
 
-      
-   glBindTexture(GL_TEXTURE_2D,texName[1]);
-      
-   glBegin(GL_TRIANGLES);   
-   for(i=0;i<16;i++) {
-  
-      glTexCoord2f(0.0,0.0);
-      glVertex3f(-1,
-		 pig_cylinder[i][1],
-		 pig_cylinder[i][0]);
-      glTexCoord2d(0.0,1.0);
-      glVertex3f(1,
-		 pig_cylinder[i][1],
-		 pig_cylinder[i][0]);
-      j=i+1;
-      if (j>=16) j=0;
-      glTexCoord2d(1.0,1.0);
-      glVertex3f(1,
-		 pig_cylinder[j][1],
-		 pig_cylinder[j][0]);
-            
-      glTexCoord2d(1.0,1.0);
-      glVertex3f(1,
-		 pig_cylinder[j][1],
-		 pig_cylinder[j][0]);
-      
-      glTexCoord2d(1.0,0.0);
-      glVertex3f(-1,
-		 pig_cylinder[j][1],
-		 pig_cylinder[j][0]);
-      glTexCoord2d(0.0,0.0);
-      glVertex3f(-1,
-		 pig_cylinder[i][1],
-		 pig_cylinder[i][0]);      
-   }
-   glEnd();
-   glDisable(GL_TEXTURE_2D);
-   
-      /* draw hemisphere back */
-   
+          j=i+1;
+          if (j>=16) j=0;
+	  
 
+	  	  
+	  calculate_normal(1, pig_cylinder[j][1],pig_cylinder[j][0],
+			   -1,pig_cylinder[i][1],pig_cylinder[i][0],
+			   1, pig_cylinder[i][1],pig_cylinder[i][0],
+			   &normalx,&normaly,&normalz);	     
+	  glNormal3f(normalx,normaly,normalz);
+	  
+	  glTexCoord2f(0.0,0.0);	  
+          glVertex3f(-1,pig_cylinder[i][1],pig_cylinder[i][0]);
+          
+	  glTexCoord2d(0.0,1.0);
+          glVertex3f(1,pig_cylinder[i][1],pig_cylinder[i][0]);
+
+          glTexCoord2d(1.0,1.0);
+          glVertex3f(1,pig_cylinder[j][1],pig_cylinder[j][0]);
+	  
+	  
+          glTexCoord2d(1.0,1.0);
+          glVertex3f(1,pig_cylinder[j][1],pig_cylinder[j][0]);
+          glTexCoord2d(1.0,0.0);
+          glVertex3f(-1,pig_cylinder[j][1],pig_cylinder[j][0]);
+          glTexCoord2d(0.0,0.0);
+          glVertex3f(-1,pig_cylinder[i][1],pig_cylinder[i][0]);      
+       }
+    glEnd();
+//    glDisable(GL_TEXTURE_2D);
    
-   glBegin(GL_QUADS);   
-   for(i=0;i<128;i++) {   
-      for(j=0;j<4;j++) {
-         glVertex3f(pig_hemisphere[pig_hemisphere_triangles[i][j]][2],
-		    pig_hemisphere[pig_hemisphere_triangles[i][j]][1],
-		    pig_hemisphere[pig_hemisphere_triangles[i][j]][0]);
-      }
-   }
-   glEnd();
+   
+       /* draw hemisphere back */
+//    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,textures[BROWN_TEXTURE]);
+    glBegin(GL_QUADS);   
+       for(i=0;i<128;i++) {   
+	  
+          calculate_normal(pig_hemisphere[pig_hemisphere_triangles[i][1]][0],
+			   pig_hemisphere[pig_hemisphere_triangles[i][1]][1],
+			   pig_hemisphere[pig_hemisphere_triangles[i][1]][2],
+			   
+			   pig_hemisphere[pig_hemisphere_triangles[i][0]][0],
+			   pig_hemisphere[pig_hemisphere_triangles[i][0]][1],
+			   pig_hemisphere[pig_hemisphere_triangles[i][0]][2],
+			   
+			   pig_hemisphere[pig_hemisphere_triangles[i][2]][0],
+			   pig_hemisphere[pig_hemisphere_triangles[i][2]][1],
+			   pig_hemisphere[pig_hemisphere_triangles[i][2]][2],
+			   &normalx,&normaly,&normalz);	     
+	  glNormal3f(normalx,normaly,normalz);
+          for(j=0;j<4;j++) {
+	     switch(j) {
+	      case 0: glTexCoord2f(0.0,0.0); break;
+	      case 1: glTexCoord2f(0.0,1.0); break;
+	      case 2: glTexCoord2f(1.0,1.0); break;
+	      case 3: glTexCoord2f(1.0,0.0); break;
+	     }
+             glVertex3f(pig_hemisphere[pig_hemisphere_triangles[i][j]][2],
+		        pig_hemisphere[pig_hemisphere_triangles[i][j]][1],
+		        pig_hemisphere[pig_hemisphere_triangles[i][j]][0]);
+	  }
+       }
+    glEnd();
    
    
        /* draw nose */
-//   glColor3f(1.0,1.0,1.0);
-   glEnable(GL_TEXTURE_2D);
-   glBindTexture(GL_TEXTURE_2D,texName[4]);
-   glBegin(GL_QUADS);   
-   glTexCoord2f(1.0,0.0);
-   glVertex3f(1.705, -0.08, -0.125);
-      glTexCoord2f(0.0,0.0);
-   glVertex3f(1.705, -0.08,  0.145);
-      glTexCoord2f(0.0,1.0);
-   glVertex3f(1.705, -0.27,  0.145);
-      glTexCoord2f(1.0,1.0);
-   glVertex3f(1.705, -0.27, -0.125);
-   glEnd();
-   glDisable(GL_TEXTURE_2D);
+    /* glColor3f(1.0,1.0,1.0);*/
+//    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D,textures[NOSE_TEXTURE]);
+    
+    glBegin(GL_QUADS);   
+   
+       calculate_normal(1.705,-0.08,0.145,
+			1.705,-0.27,0.145,
+			1.705,-0.08,-0.125,
+			&normalx,&normaly,&normalz);			
+       glNormal3f(normalx,normaly,normalz);
+   
+       glTexCoord2f(1.0,0.0);
+       glVertex3f(1.705, -0.08, -0.125);
+       glTexCoord2f(0.0,0.0);
+       glVertex3f(1.705, -0.08,  0.145);
+       glTexCoord2f(0.0,1.0);
+       glVertex3f(1.705, -0.27,  0.145);
+       glTexCoord2f(1.0,1.0);
+       glVertex3f(1.705, -0.27, -0.125);
+    glEnd();
+   
+//    glDisable(GL_TEXTURE_2D);
    
        /* draw face */
    
-//   	 glEnable(GL_TEXTURE_2D); 
-//	 glBindTexture(GL_TEXTURE_2D,texName[3]);
+/*   	 glEnable(GL_TEXTURE_2D); 
+	 glBindTexture(GL_TEXTURE_2D,texName[3]);*/
   
-   for(i=0;i<35;i++) {   
-      
-      if (pig_face_triangles[i][3]) {
-   	 glEnable(GL_TEXTURE_2D); 
-	 glBindTexture(GL_TEXTURE_2D,texName[3]);	 
-      }
-      glBegin(GL_TRIANGLES);       
-      
-      for(j=0;j<3;j++) {
+    for(i=0;i<35;i++) {   
+       if (pig_face_triangles[i][3]) {
+//   	  glEnable(GL_TEXTURE_2D); 
+	  glBindTexture(GL_TEXTURE_2D,textures[EYE_TEXTURE]);	 
+       }
+       else {
+	  glBindTexture(GL_TEXTURE_2D,textures[BROWN_TEXTURE]);
+       }
+       
+       glBegin(GL_TRIANGLES);       
+          
+          calculate_normal(pig_face[pig_face_triangles[i][2]][2],
+			   pig_face[pig_face_triangles[i][2]][1],
+			   pig_face[pig_face_triangles[i][2]][0],
+			   
+			   pig_face[pig_face_triangles[i][1]][2],
+			   pig_face[pig_face_triangles[i][1]][1],
+			   pig_face[pig_face_triangles[i][1]][0],
+			   
+			   pig_face[pig_face_triangles[i][0]][2],
+			   pig_face[pig_face_triangles[i][0]][1],
+			   pig_face[pig_face_triangles[i][0]][0],
 
-	 if (pig_face_triangles[i][3]==1) {
-	    switch(j) {
-	     case 0: glTexCoord2f(0.0,0.0); break;
-	     case 1: glTexCoord2f(0.5,1.0); break;
-	     case 2: glTexCoord2f(1.0,0.5); break;
-	    }
-	 }
+			   &normalx,&normaly,&normalz);			
+       
+          glNormal3f(normalx,normaly,normalz);
+      
+          for(j=0;j<3;j++) {
+             if (pig_face_triangles[i][3]==1) {
+	        switch(j) {
+	           case 0: glTexCoord2f(0.0,0.0); break;
+	           case 1: glTexCoord2f(0.5,1.0); break;
+	           case 2: glTexCoord2f(1.0,0.5); break;
+		}
+	     }
 	 
-	 if (pig_face_triangles[i][3]==2) {
-	    switch(j) {
-	     case 0: glTexCoord2f(0.0,1.0); break;
-	     case 1: glTexCoord2f(1.5,0.5); break;
-	     case 2: glTexCoord2f(0.0,0.0); break;
-	    }
-	 }
-	    
-	    
-         glVertex3f(pig_face[pig_face_triangles[i][j]][2],
-		    pig_face[pig_face_triangles[i][j]][1],
-		    pig_face[pig_face_triangles[i][j]][0]);
-      }
-      glEnd();
+	     else if (pig_face_triangles[i][3]==2) {
+	        switch(j) {
+	           case 0: glTexCoord2f(0.0,1.0); break;
+	           case 1: glTexCoord2f(1.5,0.5); break;
+	           case 2: glTexCoord2f(0.0,0.0); break;
+		}
+	     }
+	     
+	     else {
+		  switch(j) {
+	           case 0: glTexCoord2f(0.0,1.0); break;
+	           case 1: glTexCoord2f(1.5,0.5); break;
+	           case 2: glTexCoord2f(0.0,0.0); break;
+		}
+	     }
+	     
+	     
+             glVertex3f(pig_face[pig_face_triangles[i][j]][2],
+		        pig_face[pig_face_triangles[i][j]][1],
+		        pig_face[pig_face_triangles[i][j]][0]);
+	  }
+       glEnd();
       
-      if (pig_face_triangles[i][3]) glDisable(GL_TEXTURE_2D);
-   }
+    }
 
-   
-   
+
        /* draw feet */
       
-   glColor3f(0.75,0.0,0.75);
+    glColor3f(0.75,0.0,0.75);
+    glBindTexture(GL_TEXTURE_2D,textures[FLESH_TEXTURE]);   
+    glBegin(GL_QUADS);   
    
-   glBegin(GL_QUADS);   
-   
-   for(k=0;k<4;k++) {
-      for(i=0;i<6;i++) {   
-         for(j=0;j<4;j++) {
-            glVertex3f( pig_feet[k][pig_feet_triangles[i][j]][2],
-		       pig_feet[k][pig_feet_triangles[i][j]][1],
-		       pig_feet[k][pig_feet_triangles[i][j]][0]);
-	 }
-      }
-   }
-   glEnd();
-       /* draw ears */
-   
-   glBegin(GL_QUADS);
-   glVertex3f(0.695,0.376399,-0.420208);
-   glVertex3f(1.025,0.376399,-0.420208);
-   glVertex3f(1.025,0.146586,-0.613044);
-   glVertex3f(0.695,0.146586,-0.613044);
+       for(k=0;k<4;k++) {
+          for(i=0;i<6;i++) {   
+	     calculate_normal(pig_feet[k][pig_feet_triangles[i][0]][2],
+			      pig_feet[k][pig_feet_triangles[i][0]][1],
+			      pig_feet[k][pig_feet_triangles[i][0]][0],
+			      
+			      pig_feet[k][pig_feet_triangles[i][2]][2],
+			      pig_feet[k][pig_feet_triangles[i][2]][1],
+			      pig_feet[k][pig_feet_triangles[i][2]][0],
+			      
+			      pig_feet[k][pig_feet_triangles[i][1]][2],
+			      pig_feet[k][pig_feet_triangles[i][1]][1],
+			      pig_feet[k][pig_feet_triangles[i][1]][0],
+			      
+			      &normalx,&normaly,&normalz);
+             glNormal3f(normalx,normaly,normalz);
 
-   glVertex3f(0.695, 0.407392,0.317956);
-   glVertex3f(1.025,0.407392,0.317956);
-   glVertex3f(1.025,0.161647,0.490029);
-   glVertex3f(0.695,0.161647,0.490029);
-   glEnd();
-   
-   glPopMatrix();
-}
-   
-   
-
-
-void draw_robo_pig(float pigx,float pigy,float pigz,float direction) {
-   
-   glEnable(GL_TEXTURE_2D);
-   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-   
-   glPushMatrix();
-
-   
-   glTranslatef(pigx,pigy,pigz);
-   glRotatef(direction,0.0,0.0,1.0);
-   
-   glBindTexture(GL_TEXTURE_2D,texName[0]);
-   
-   
-      /* Back */
-   glBegin(GL_QUADS);
-   glTexCoord2f(0.0, 0.0); glVertex3f(-2.0,1.0,-1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(-2.0,1.0,1.0);
-   glTexCoord2f(1.0, 1.0); glVertex3f(-2.0,-1.0,1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(-2.0,-1.0,-1.0);
-   glEnd();
-   
-   glBindTexture(GL_TEXTURE_2D,texName[1]);
-   glBegin(GL_QUADS);
-   glTexCoord2f(0.0, 0.0); glVertex3f(-2.0,1.0,-1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(2.0,1.0,-1.0);
-   glTexCoord2f(1.0, 1.0); glVertex3f(2.0,1.0,1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(-2.0,1.0,1.0);
-
-   glTexCoord2f(0.0, 0.0); glVertex3f(-2.0,1.0,1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(2.0,1.0,1.0);
-   glTexCoord2f(1.0, 1.0); glVertex3f(2.0,-1.0,1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(-2.0,-1.0,1.0);
-
-   glTexCoord2f(0.0, 0.0); glVertex3f(-2.0,-1.0,1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(2.0,-1.0,1.0);
-   glTexCoord2f(1.0, 1.0); glVertex3f(2.0,-1.0,-1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(-2.0,-1.0,-1.0);
-
-   glTexCoord2f(0.0, 0.0); glVertex3f(-2.0,-1.0,-1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(2.0,-1.0,-1.0);
-   glTexCoord2f(1.0, 1.0); glVertex3f(2.0,1.0,-1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(-2.0,1.0,-1.0);
-   glEnd();
-   
-   glBindTexture(GL_TEXTURE_2D,texName[2]);
-   glBegin(GL_QUADS);
-   
-   glTexCoord2f(1.0, 1.0); glVertex3f(2.0,1.0,-1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(2.0,1.0,1.0);
-   glTexCoord2f(0.0, 0.0); glVertex3f(2.0,-1.0,1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(2.0,-1.0,-1.0);
-   
-   glEnd();
-
-   glPopMatrix();
-   glDisable(GL_TEXTURE_2D);
-
-   return;
-}
-
-void display(void) {
-   
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-   glLoadIdentity();
-   gluLookAt(-10.0,0.0,5.0,
-	     0.0,0.0,0.0,
-	     0.0,0.0,1.0);
-   
-
-   
-       /* Draw grassy field */
-   glPushMatrix();
-   glColor3f(0.4102,0.543,0.1328);
-   glBegin(GL_QUADS);
-   glVertex3f(-5,-5,0);
-   glVertex3f(-5,5,0);
-   glVertex3f(5,5,0);
-   glVertex3f(5,-5,0);
-   glEnd();
-   glPopMatrix();
-
-   
-//   draw_robo_pig(pigx,pigy,pigz,direction);
-      draw_good_pig(pigx,pigy,pigz,direction);
-
-   draw_carrot(-4.0,3.0,0.5,90);
-   
-   glFlush();
-   SDL_GL_SwapBuffers();
-   
-}
-
-void reshape(int w,int h) {
-   glViewport(0,0,(GLsizei)w,(GLsizei)h);
-   glMatrixMode(GL_PROJECTION);
-   glLoadIdentity();
-   gluPerspective(60.0,(GLfloat)w/(GLfloat)h,1.0,30.0);
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-   //glTranslatef(0.0,0.0,-3.6);
-}
-
-int check_keyboard(void) {
-
-      
-   
-    SDL_Event event;
-    int keypressed;
-	       
-   
-   
-    while ( SDL_PollEvent(&event) ) {
-       if ( event.type == SDL_QUIT ) {
-          done = 1;
-	  return 1;
-       }
-		          
-       if ( event.type == SDL_KEYDOWN ) {
-	  keypressed=event.key.keysym.sym;
-	   
-	  switch (keypressed) {
-	   case SDLK_ESCAPE: done = 1; 
-	                     return 1;  
-	                     break;
-	   case SDLK_RIGHT:  direction-=10;
-                             display();
-                             return 1;
-           case SDLK_LEFT:   direction+=10;    
-                             display();
-                             return 1;
-           case SDLK_UP:     pigy+=sin( (direction*PI)/180.0);
-                             pigx+=cos( (direction*PI)/180.0);
-                             display();
-	                     return 1;
-	   case SDLK_DOWN:   pigy-=sin( (direction*PI)/180.0);
-                             pigx-=cos( (direction*PI)/180.0);
-                            display();
-                             return 1;
+             for(j=0;j<4;j++) {
+			     switch(j) {
+	      case 0: glTexCoord2f(0.0,0.0); break;
+	      case 1: glTexCoord2f(0.0,1.0); break;
+	      case 2: glTexCoord2f(1.0,1.0); break;
+	      case 3: glTexCoord2f(1.0,0.0); break;
+	     }
+                glVertex3f( pig_feet[k][pig_feet_triangles[i][j]][2],
+		            pig_feet[k][pig_feet_triangles[i][j]][1],
+		            pig_feet[k][pig_feet_triangles[i][j]][0]);
+	     }
 	  }
        }
-    }
-    return 0;
-}
+    glEnd();
+       
+       /* draw ears */
+    glBegin(GL_QUADS);
+              
+       calculate_normal(1.025,0.376399,-0.420208,
+			1.025,0.146586,-0.613044,
+			0.695,0.376399,-0.420208,
+			&normalx,&normaly,&normalz);			
+       glNormal3f(normalx,normaly,normalz);
 
-int main(int argc, char **argv) {
    
-   
-       /* Initialize SDL */
-   if ( SDL_Init(SDL_INIT_VIDEO)<0) {
-      printf("Error trying to init SDL\n");
-      return -1;
-   }
-   
-       /* Create a 640x480 OpenGL screen */
-   if ( SDL_SetVideoMode(640, 480, 0, SDL_OPENGL) == NULL ) {
-      printf("Unable to create OpenGL screen: %s\n", SDL_GetError());
-      SDL_Quit();
-      return -2;
-   }
-   
-   SDL_WM_SetCaption("Guinea Pig Adventure...",NULL);
-   
-   init();
-   reshape(640,480);
-   
-//   display();
- 
-    opener();
-   
-    while ( ! done ) {
-       check_keyboard();
-    }
-    SDL_Quit();
+       glVertex3f(0.695,0.376399,-0.420208);
+       glVertex3f(1.025,0.376399,-0.420208);
+       glVertex3f(1.025,0.146586,-0.613044);
+       glVertex3f(0.695,0.146586,-0.613044);
 
-   return 0;
+       calculate_normal(0.695, 0.407392,0.317956,
+			1.025,0.161647,0.490029,
+			1.025,0.407392,0.317956,
+			&normalx,&normaly,&normalz);			
+       glNormal3f(normalx,normaly,normalz);
+
+       glVertex3f(0.695, 0.407392,0.317956);
+       glVertex3f(1.025,0.407392,0.317956);
+       glVertex3f(1.025,0.161647,0.490029);
+       glVertex3f(0.695,0.161647,0.490029);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+   
+    glEndList();
+   
+    return display_list;
 }
+   

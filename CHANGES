@@ -5,3 +5,7 @@
   
 27 June 2001
 + Switched from glut to SDL
+
+8 July 2001
++ Re-organized code
++ Moved some more things over to display lists
