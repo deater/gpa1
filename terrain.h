@@ -18,5 +18,8 @@ typedef struct map_element {
       void *objects;
 } map_element;
 
+extern float terrain_heights[];
+
+
 void setup_map(void);
 void setup_terrain(void);

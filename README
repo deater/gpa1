@@ -1,0 +1,20 @@
+Guinea Pig Adventure 1
+http://www.deater.net/vmwprod/gp1/
+
+by Vince Weaver
+vince@deater.net
+
+Background
+~~~~~~~~~~
+A rpg adventure game written as an exercise in learning OpenGL.
+
+Instructions
+~~~~~~~~~~~~
+Use arrows/joystick to move.
+'A' and 'Z' change altitude
+'I' 'J' 'K' 'M' change camera angle
+'L' toggles lighting effects
+
+Command Line Options
+~~~~~~~~~~~~~~~~~~~~
+--halfsize   runs in 320x200 mode

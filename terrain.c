@@ -37,6 +37,20 @@ char region_names[8][25]={
 #define OCEAN_CITY_AREA 5
 #define ARCTIC_BASE_AREA 6
 
+
+float terrain_heights[NUM_TERRAINS]={
+   0.0,  /*define GRASS_TERRAIN */
+   4.0, /*define MOUNTAIN_TERRAIN */
+   -0.25, /*define OCEAN_TERRAIN */
+   0.5,   /* #define FOREST_TERRAIN */
+   0.0,   /* define BEACH_TERRAIN   */
+   0.0,   /*#define BEACHCORNER_TERRAIN */
+   0.0,   /*#define BEACHEND_TERRAIN    */
+   0.0,  /*#define TUNDRA_TERRAIN      */
+   0.0,  /*#define CLIFF_TERRAIN       */
+   0.0,  /*#define CLIFFCORNER_TERRAIN */
+};
+
 void init_hline(x1,x2,y, terrain, rotation, region) {
  
    int x;

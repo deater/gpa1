@@ -15,3 +15,22 @@
 #define SAND_TEXTURE             14
 #define SHALLOW_TEXTURE          15
 #define TUNDRA_TEXTURE           16
+#define SS_GRAY                  17
+#define SS_TOP                   18
+#define SS_BOTTOM                19
+#define SS_THRUST                20
+#define SS_NOTHRUST              21
+#define SS_LEFT                  22
+#define SS_RIGHT                 23
+#define SS_BACK                  24
+#define SHADOW_TEXTURE		 25
+#define SPLASH_TEXTURE		 26
+#define TOTAL_TEXTURES 27
+
+extern GLuint textures[];
+
+void LoadTexture(int x,int y,char *filename,int which_one,int transparent,
+		 int repeat_type);
+
+void LoadAlphaTexture(int x,int y,char *filename,int which_one,int transparent,
+		 int repeat_type,int r,int g,int b);

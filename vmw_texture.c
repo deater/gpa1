@@ -279,3 +279,173 @@ GLubyte *vmwLoadTexture(int x1,int y1,GLubyte *texture,char *FileName,int alpha)
     close(ppro_fd);
     return texture;
 }
+
+int r,g,b;
+
+
+    /* Uses Red plane as alpha value, with default color being black */
+int vmwPutAlphaPixel(int x,int y,int color,GLubyte *texture) {
+ 
+   
+   if ((x<texture_x) && (y<texture_y)) {
+	     
+      texture[(y*(texture_x*4))+(x*4)]=r;
+      texture[(y*(texture_x*4))+(x*4)+1]=g;
+      texture[(y*(texture_x*4))+(x*4)+2]=b;
+      
+      texture[(y*(texture_x*4))+(x*4)+3]=palette[color][0];
+   }
+   return 0;
+}
+
+
+int vmwDrawAlphaHLine(int x,int y,int run,int color,GLubyte *target) {
+   
+   int i;
+   
+   for(i=0;i<run;i++) {
+      vmwPutAlphaPixel(x+i,y,color,target);  
+      
+   }
+   return 0;
+}
+
+GLubyte *vmwLoadAlphaTexture(int x1,int y1,GLubyte *texture,char *FileName,int in_r,int in_g,int in_b) 
+
+  /* Retro comments */
+/*{ Loads a paintpro image, filename, at location x1,y1      *\
+\*  to offset where (vga=$A000) and loadspal if LOADPAL=true */
+/*  Loadsapicture if Loadpic=true and returns error}         */
+
+{
+
+    int x,y,i;
+    int ppro_fd;
+    int color,numacross;
+    int read_status;
+    vmwPaintProHeader *ppro_header;
+    unsigned char three_bytes[3];
+    int broken=0;
+
+    GLubyte *target;
+
+   
+    texture_x=x1; texture_y=y1;
+   
+    if ( (ppro_header=vmwGetPaintProHeader(FileName))==NULL) {
+       printf("ERROR!  Invalid Header in %s!\n",FileName);
+       return NULL;
+    }   
+   
+
+    texture=(GLubyte *)calloc(x1*y1*4,sizeof(GLubyte));
+
+    r=in_r; g=in_g; b=in_b;
+   
+    target=texture;
+   
+       /* Open the file */                  
+    ppro_fd=open(FileName,O_RDONLY);
+    
+    if (ppro_fd<0) {
+       printf("ERROR!  File \"%s\" not found!\n",FileName);
+       return NULL;
+    }
+   
+       /* Check to see if its really a Paintpro File */
+    if (strncmp(ppro_header->ppro_string,"PAINTPRO",8)) {
+       printf("ERROR!  %s is NOT a paintpro file!\n",FileName);
+       return NULL;
+    }
+
+       /* Check to see if it is the proper version (currently 6.0) */
+    if (strncmp(ppro_header->version,"V6.1",4)) {
+       if (!strncmp(ppro_header->version,"V6.0",4)) {
+	  printf("Warning!  Broken 6.0 file! Please convert.\n");
+	  broken=1;
+       }
+       else {
+          printf("ERROR! %s unsupported, must be >=6.0\n",
+	         ppro_header->version);
+          return NULL;
+       }
+    }
+      
+       /*Load Palette*/
+    if (ppro_header->num_colors>256) 
+       printf("More than 256 colors not supported yet (%d)\n",
+	      ppro_header->num_colors);
+   
+       /* Seek past the header */
+    lseek(ppro_fd,18,SEEK_SET);
+   
+       /* Fun and games to convert the 24 bit color in paintpro to */
+       /* 565 packed 16bit RGB */
+
+       for(i=0;i<ppro_header->num_colors;i++) { 
+          read_status=read(ppro_fd,&three_bytes,3);
+	  palette[i][0]=three_bytes[0];
+	  palette[i][1]=three_bytes[1];
+	  palette[i][2]=three_bytes[2];
+       }
+
+   
+   
+    x=0;
+    y=0;
+
+    while (y<ppro_header->ysize) {
+          /* Read in next 3 bytes */
+       read_status=read(ppro_fd,&three_bytes,3);
+       
+          /* If we read less than 3, something is wrong */
+       if (read_status<3) {
+	  printf("Ran out of data too soon!\n");
+	  break;
+       }
+       
+       color=THREE_BYTES_INT1(three_bytes[0],three_bytes[1]);
+       numacross=THREE_BYTES_INT2(three_bytes[1],three_bytes[2]);
+       
+          /* If int1 greater than 2047, we have two single pixels */
+          /* of color int1-2048 and int2-2048                    */
+       if (color>2047) {
+	  if ((x<texture_x) && (y<texture_y))
+          vmwPutAlphaPixel(x,y,color-2048,target);
+          x++;
+          if (x>=ppro_header->xsize) {
+	     x=0; y++;
+	  }
+          vmwPutAlphaPixel(x,y,numacross-2048,target);
+          x++;
+          if (x>=ppro_header->xsize){
+	     x=0;y++;
+	  }
+       }
+       else {  /* Standard paintpro format */
+	     /* Wrap if numacross is bigger than width */
+          while ((x+numacross)>=(ppro_header->xsize)) {
+	     vmwDrawAlphaHLine(x,y,((ppro_header->xsize)-x),color,target);
+                /* Old versions of paintro created broken   */
+	        /* Files which need an extra +1 after xsize */
+	        /* In the following line */
+	     numacross=numacross-((ppro_header->xsize+broken)-x);
+	     x=0;
+	     y++;
+          }
+	  
+          if (numacross!=0) {
+	     if (y>=ppro_header->ysize) {
+		printf("Trying to draw past end of screen %d\n",y);
+	     }
+	     if (numacross > ppro_header->xsize-1) {
+		printf("X too big?%d\n",numacross);
+	     }
+	     vmwDrawAlphaHLine(x,y,numacross,color,target);
+	  }
+          x=x+numacross;
+       }
+    }
+    close(ppro_fd);
+    return texture;
+}

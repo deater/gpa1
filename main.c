@@ -8,35 +8,48 @@
 #include "vmw_texture.h"
 #include "vmw_glfont.h"
 
+#include "gl_helper.h"
+
 #include "opener.h"
 #include "guinea_pig.h"
+#include "spaceship.h"
 #include "matrix_math.h"
+
+#include "keyboard.h"
+
+#include "story.h"
 
 #include "textures.h"
 #include "terrain.h"
 
+    /* As much as I have memorized... */
 #define PI 3.141592653589793238462643383279502884197169399
   
 
-#define checkImageWidth 64
-#define checkImageHeight 64
+int old_msecs=0,new_msecs=0;
 
-
-int use_textures=1;
 int use_lighting=1;
 
    GLuint leonard;
+   GLuint spaceships[2];
    GLuint terrain[NUM_TERRAINS];
+
+
+typedef struct {
+   float direction,pigx,pigy,pigz;
+   int gridx,gridy;
+   int spaceship_active,in_spaceship;   
+} game_state_type;
+
+game_state_type gs={
+   0,0,0,-0.5,
+   5,13,
+   1,1,
+};
 
 int whoami=0;
 
-
-GLuint textures[20];
-
-
-float direction=0.0,pigx=0.0,pigy=0.0,pigz=-0.5;
-
-int gridx=5,gridy=13;
+int show_menu=0;
 
 float camera_direction=90*(180.0/PI),camerax=-10.0,cameray=0,cameraz=5.0;
 
@@ -47,75 +60,51 @@ void parse_config(void) {
    
 }
 
-void LoadTexture(int x,int y,char *filename,int which_one,int transparent,
-		 int repeat_type) {
-
-
-    static GLubyte *texture;
-    texture=vmwLoadTexture(x,y,texture,filename,transparent);
-
-    glBindTexture(GL_TEXTURE_2D,textures[which_one]);
-   
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeat_type);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeat_type);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x,
-		 y ,0,GL_RGBA,GL_UNSIGNED_BYTE,texture);
-   
-}
-
    
 #define D2R(x) ((x*PI)/180.0)
 
-float sphere[28][36][3];
 
 map_element world_map[40][40];
-
-
-void setup_sphere(void) {
-   
-
-   float rho=204.5,theta=0,phi=0;
-   
-   int i,j;
-   
-   for(i=0;i<28;i++) {
-      phi=((float)i-14.5)*0.4;
-      for(j=0;j<36;j++) {
-	 theta=j*10.0;
-         sphere[i][j][0]=rho*sin(D2R(phi))*cos(D2R(theta));
-         sphere[i][j][1]=rho*sin(D2R(phi))*sin(D2R(theta));
-	 sphere[i][j][2]=rho*cos(D2R(phi))-204.31;
-      }
-
-   }
-}
-
 
 void LoadTextures(void) {
 
    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
    
-   glGenTextures(20,textures);  
+   glGenTextures(TOTAL_TEXTURES,textures);  
    
+       /* 0 */
    LoadTexture(64,64,"./textures/carrot.amg",CARROT_TEXTURE,0,GL_REPEAT);
    LoadTexture(64,64,"./textures/eye.amg",EYE_TEXTURE,0,GL_CLAMP);
    LoadTexture(64,64,"./textures/face.amg",ROBOT_FACE_TEXTURE,0,GL_CLAMP);
    LoadTexture(64,64,"./textures/grass.amg",GRASS_TEXTURE,0,GL_REPEAT);
    LoadTexture(64,64,"./textures/leaves.amg",LEAVES_TEXTURE,1,GL_CLAMP);
+       /* 5 */
    LoadTexture(64,64,"./textures/nose.amg",NOSE_TEXTURE,0,GL_CLAMP);
    LoadTexture(64,64,"./textures/sky.amg",SKY_TEXTURE,0,GL_REPEAT);
    LoadTexture(64,64,"./textures/brown.amg",BROWN_TEXTURE,0,GL_REPEAT);
    LoadTexture(64,64,"./textures/bwb.amg",BROWN_WHITE_BROWN_TEXTURE,0,GL_CLAMP);
    LoadTexture(64,64,"./textures/flesh.amg",FLESH_TEXTURE,0,GL_CLAMP);
+       /* 10 */
    LoadTexture(64,64,"./textures/ocean.amg",OCEAN_TEXTURE,0,GL_REPEAT);
    LoadTexture(64,64,"./textures/mountain.amg",MOUNTAIN_TEXTURE,0,GL_CLAMP);
    LoadTexture(64,64,"./textures/cliff.amg",CLIFF_TEXTURE,0,GL_REPEAT);
    LoadTexture(64,64,"./textures/sand.amg",SAND_TEXTURE,0,GL_REPEAT);
    LoadTexture(64,64,"./textures/tree.amg",FOREST_TEXTURE,0,GL_REPEAT);
+       /* 15 */
    LoadTexture(64,64,"./textures/shallow.amg",SHALLOW_TEXTURE,0,GL_CLAMP);
    LoadTexture(64,64,"./textures/tundra.amg",TUNDRA_TEXTURE,0,GL_REPEAT);
+   LoadTexture(64,64,"./textures/spaceship_gray.amg",SS_GRAY,0,GL_CLAMP);
+   LoadTexture(64,64,"./textures/spaceship_top.amg",SS_TOP,0,GL_CLAMP);
+   LoadTexture(64,64,"./textures/spaceship_bottom.amg",SS_BOTTOM,0,GL_CLAMP);
+       /* 20 */
+   LoadTexture(64,64,"./textures/spaceship_thrust_on.amg",SS_THRUST,0,GL_CLAMP);
+   LoadTexture(64,64,"./textures/spaceship_thrust_off.amg",SS_NOTHRUST,0,GL_CLAMP);
+   LoadTexture(128,64,"./textures/spaceship_right.amg",SS_RIGHT,0,GL_CLAMP);
+   LoadTexture(128,64,"./textures/spaceship_left.amg",SS_LEFT,0,GL_CLAMP);
+   LoadTexture(64,64,"./textures/spaceship_back.amg",SS_BACK,0,GL_CLAMP);
+       /* 25 */
+   LoadAlphaTexture(64,64,"./textures/shadow.amg",SHADOW_TEXTURE,0,GL_CLAMP,0x00,0x00,0x00);
+   LoadAlphaTexture(64,64,"./textures/splash.amg",SPLASH_TEXTURE,0,GL_CLAMP,0x52,0xdd,0xdd);
 }
 
 GLubyte *font;
@@ -148,191 +137,17 @@ void init(void) {
 
   
 
-
-void draw_carrot(float carrotx,float carroty,float carrotz,float direction) {
-   
-   float normalx,normaly,normalz;
-   
-   glPushMatrix();
-
-   glTranslatef(carrotx,carroty,carrotz);
-   glRotatef(direction,0.0,0.0,1.0);
-   
-   glColor3f(0.9961,0.6445,0);
-   glEnable(GL_TEXTURE_2D);
-   glBindTexture(GL_TEXTURE_2D,textures[CARROT_TEXTURE]);      
-   glBegin(GL_TRIANGLES);
-    
-      calculate_normal(0.0,-0.5,0.5,
-		       2.0,0,0.5,
-                       0.0,0.5,0.5,
-			&normalx,&normaly,&normalz);
-      glNormal3f(normalx,normaly,normalz);
-   
-      glVertex3f(0.0,-0.5,0.5);
-      glVertex3f(2.0,0,0.5);
-      glVertex3f(0.0,0.5,0.5);
-   
-      calculate_normal(0.0,0.5,0.5,
-		       2.0,0,0.5,
-                       0.0,0.5,-0.5,
-			&normalx,&normaly,&normalz);
-      glNormal3f(normalx,normaly,normalz);
-   
-   
-      glVertex3f(0.0,0.5,0.5);
-      glVertex3f(2.0,0,0.5);
-      glVertex3f(0.0,0.5,-0.5);
-   
-         calculate_normal(0.0,0.5,-0.5,
-		       2.0,0,0.5,
-                       0.0,-0.5,-0.5,
-			&normalx,&normaly,&normalz);
-      glNormal3f(normalx,normaly,normalz);
-   
-   
-      glVertex3f(0.0,0.5,-0.5);
-      glVertex3f(2.0,0,0.5);
-      glVertex3f(0.0,-0.5,-0.5);
-   
-   
-         calculate_normal(0.0,-0.5,-0.5,
-		       2.0,0,0.5,
-                       0.0,-0.5,0.5,
-			&normalx,&normaly,&normalz);
-      glNormal3f(normalx,normaly,normalz);
-      glVertex3f(0.0,-0.5,-0.5);
-      glVertex3f(2.0,0,0.5);
-      glVertex3f(0.0,-0.5,0.5);
-   
-      /* TOP */
-   
-         calculate_normal(0.0,-0.5,0.5,
-		       0.0,0.0,0.5,
-                       0.0,0.5,-0.5,
-			&normalx,&normaly,&normalz);
-      glNormal3f(normalx,normaly,normalz);
-   
-      glVertex3f(0.0,-0.5,0.5);
-      glVertex3f(0.0,0.5,0.5);
-      glVertex3f(0.0,0.5,-0.5);
-   
-   
-      glVertex3f(0.0,0.5,-0.5);
-      glVertex3f(0.0,-0.5,-0.5);
-      glVertex3f(0.0,-0.5,0.5);
-   
-   
-   glEnd();
-   
-
-
-   
-   glBindTexture(GL_TEXTURE_2D,textures[LEAVES_TEXTURE]);   
-     glBegin(GL_QUADS);
-   
-     glTexCoord2f(0.0,0.0);
-     glVertex3f(0.0,0.0,0.5);
-     glTexCoord2f(0.0,1.0);
-     glVertex3f(0.0,0.0,-0.5);
-     glTexCoord2f(1.0,1.0);
-     glVertex3f(-2.0,0.0,-0.5);
-     glTexCoord2f(1.0,0.0);
-     glVertex3f(-2.0,0.0,0.5);
-
-     glTexCoord2f(0.0,0.0);
-     glVertex3f(0.0,0.5,0.0);
-     glTexCoord2f(0.0,1.0);
-     glVertex3f(0.0,-0.5,0.5);
-     glTexCoord2f(1.0,1.0);
-     glVertex3f(-2.0,-0.5,0.0);
-     glTexCoord2f(1.0,0.0);
-     glVertex3f(-2.0,0.5,0.0);
-   
-   
-   
-     glEnd();
-   
-   
-   glDisable(GL_TEXTURE_2D);
-   
-   
-   
-   
-   glPopMatrix();
-   
-}
-
-
-
-
-void draw_robo_pig(float pigx,float pigy,float pigz,float direction) {
-   
-   glEnable(GL_TEXTURE_2D);
-   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-   
-   glPushMatrix();
-
-   
-   glTranslatef(pigx,pigy,pigz);
-   glRotatef(direction,0.0,0.0,1.0);
-   
-   glBindTexture(GL_TEXTURE_2D,textures[0]);
-   
-   
-      /* Back */
-   glBegin(GL_QUADS);
-   glTexCoord2f(0.0, 0.0); glVertex3f(-2.0,1.0,-1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(-2.0,1.0,1.0);
-   glTexCoord2f(1.0, 1.0); glVertex3f(-2.0,-1.0,1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(-2.0,-1.0,-1.0);
-   glEnd();
-   
-   glBindTexture(GL_TEXTURE_2D,textures[1]);
-   glBegin(GL_QUADS);
-   glTexCoord2f(0.0, 0.0); glVertex3f(-2.0,1.0,-1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(2.0,1.0,-1.0);
-   glTexCoord2f(1.0, 1.0); glVertex3f(2.0,1.0,1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(-2.0,1.0,1.0);
-
-   glTexCoord2f(0.0, 0.0); glVertex3f(-2.0,1.0,1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(2.0,1.0,1.0);
-   glTexCoord2f(1.0, 1.0); glVertex3f(2.0,-1.0,1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(-2.0,-1.0,1.0);
-
-   glTexCoord2f(0.0, 0.0); glVertex3f(-2.0,-1.0,1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(2.0,-1.0,1.0);
-   glTexCoord2f(1.0, 1.0); glVertex3f(2.0,-1.0,-1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(-2.0,-1.0,-1.0);
-
-   glTexCoord2f(0.0, 0.0); glVertex3f(-2.0,-1.0,-1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(2.0,-1.0,-1.0);
-   glTexCoord2f(1.0, 1.0); glVertex3f(2.0,1.0,-1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(-2.0,1.0,-1.0);
-   glEnd();
-   
-   glBindTexture(GL_TEXTURE_2D,textures[2]);
-   glBegin(GL_QUADS);
-   
-   glTexCoord2f(1.0, 1.0); glVertex3f(2.0,1.0,-1.0);
-   glTexCoord2f(1.0, 0.0); glVertex3f(2.0,1.0,1.0);
-   glTexCoord2f(0.0, 0.0); glVertex3f(2.0,-1.0,1.0);
-   glTexCoord2f(0.0, 1.0); glVertex3f(2.0,-1.0,-1.0);
-   
-   glEnd();
-
-   glPopMatrix();
-   glDisable(GL_TEXTURE_2D);
-
-   return;
-}
+int turn_right=0,turn_left=0,draw_splash=0;
 
 void display(void) {
    
    int i,j,distance_seen,land_type,tempx,tempy;
-     GLfloat light_position[]={0.0,0.0,10.0,0.0
+   GLfloat shadow_width;
+     GLfloat light_position[]={5.0,5.0,100.0,0.0
      };
    
+//     GLfloat light_ambient[]={0.5,0.5,0.5,1.0
+//     };
        GLfloat lmodel_ambient[]={0.9,0.9,0.9,1.0
        };
    
@@ -352,12 +167,13 @@ void display(void) {
    
    if (use_lighting) {
       glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+//      glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
       glLightfv(GL_LIGHT0, GL_DIFFUSE, white_light);
       glLightfv(GL_LIGHT0, GL_SPECULAR,white_light);
       
       glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
-      glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL,GL_SEPARATE_SPECULAR_COLOR);
-			        
+//      glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL,GL_SEPARATE_SPECULAR_COLOR);
+
       glEnable(GL_LIGHTING);
       glEnable(GL_LIGHT0);
    }
@@ -365,7 +181,7 @@ void display(void) {
 
    
      {
-	GLfloat default_a[]={0.2,0.2,0.2,1.0};
+	GLfloat default_a[]={0.6,0.6,0.6,1.0};
         GLfloat default_d[]={   0.8,0.8,0.8,1.0};
 	GLfloat default_s[]={0.0,0.0,0.0,1.0};
 	GLfloat default_e[]={0.0,0.0,0.0,1.0
@@ -378,8 +194,8 @@ void display(void) {
      }
 
    glPushMatrix();
-   glRotatef( (360-direction),0,0,1);   
-   glTranslatef(-pigx,-pigy,pigz);
+   glRotatef( (360-gs.direction),0,0,1);   
+   glTranslatef(-gs.pigx,-gs.pigy,-gs.pigz);
 
    
    glColor3f(0.4102,0.543,0.1328);
@@ -431,8 +247,8 @@ void display(void) {
       glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
    
          /* Left */
-    
-      glNormal3f(0.0,-1.0,0.0);
+   
+       glNormal3f(0.0,-1.0,0.0);
    
       glTexCoord2f(0.0, 0.0);
       glVertex3f(-SKY_DISTANCE,SKY_DISTANCE,SKY_DISTANCE);
@@ -470,7 +286,7 @@ void display(void) {
    
    glEnd();
 
-   glEnable(GL_TEXTURE_2D);
+//   glEnable(GL_TEXTURE_2D);
    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
 
    
@@ -486,10 +302,10 @@ void display(void) {
     for(i=-distance_seen;i<=distance_seen;i++) {
        for(j=-distance_seen;j<=distance_seen;j++) {
 	    
-	  tempx=gridx+i;
+	  tempx=gs.gridx+i;
 	  if (tempx<0) tempx+=40;
 	  if (tempx>39) tempx-=40;
-	  tempy=gridy+j;
+	  tempy=gs.gridy+j;
 	  if (tempy<0) tempy+=40;
 	  if (tempy>39) tempy-=40;
 	    
@@ -510,18 +326,108 @@ void display(void) {
    glPopMatrix();
 
    
-//   draw_robo_pig(pigx,pigy,pigz,direction);
-//      draw_good_pig(pigx,pigy,pigz,direction);
+//   draw_robo_pig(gs.pigx,gs.pigy,gs.pigz,direction);
+//      draw_good_pig(gs.pigx,gs.pigy,gs.pigz,direction);
 
-//   draw_guinea_pig(leonard,pigx,pigy,pigz,direction);
+//   draw_guinea_pig(leonard,gs.pigx,gs.pigy,gs.pigz,direction);
    
    if (whoami==leonard) {
+      glPushMatrix(); 
+//      glTranslatef(gs.pigx,gs.pigy,gs.pigz);
+      
+//      glRotatef(direction,0.0,0.0,1.0);
+//       glRotatef(0,0,0,1);
+    /* draw shadow */
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D,textures[SHADOW_TEXTURE]);   
+      
+   glBegin(GL_QUADS);
+         
+          shadow_width=(1.5+(-gs.pigz/5.0))/2.0;
+      
+          glNormal3f(0.0,0.0,1.0);
+   
+          glTexCoord2f(0.0, 0.0);
+          glVertex3f(-0.75,-shadow_width,-gs.pigz+0.1);
+      
+          glTexCoord2f(1.0, 0.0);
+          glVertex3f(0.75,-shadow_width,-gs.pigz+0.1);
+      
+          glTexCoord2f(1.0, 1.0);
+          glVertex3f(0.75,shadow_width,-gs.pigz+0.1);
+      
+          glTexCoord2f(0.0, 1.0);
+          glVertex3f(-0.75,shadow_width,-gs.pigz+0.1);         
+      
+      glEnd();
+      
+      
+      if ((draw_splash) && (gs.pigz<0.75)) {
+//	 printf("pigz: %f\n",gs.pigz);
+         glBindTexture(GL_TEXTURE_2D,textures[SPLASH_TEXTURE]);   
+      
+         glBegin(GL_QUADS);
+               
+          glNormal3f(0.0,0.0,1.0);
+   
+          glTexCoord2f(0.0, 0.0);
+          glVertex3f(-8.0,-1.0,-0.85);
+      
+          glTexCoord2f(1.0, 0.0);
+          glVertex3f(-8.0,1.0,-0.85);
+      
+          glTexCoord2f(1.0, 1.0);
+          glVertex3f(-1.45,1.0,-0.85);
+      
+          glTexCoord2f(0.0, 1.0);
+          glVertex3f(-1.25,-1.0,-0.85);         
+         glEnd();
+      }
+      if (turn_right) {
+         glRotatef(20,1.0,0.0,0.0);
+      }
+      if (turn_left) {
+	 glRotatef(-20,1.0,0.0,0.0);
+      }
+      glCallList(spaceships[0]);
+      
+      glPopMatrix();
+      
+      /*
       draw_guinea_pig(leonard,0,0,0,0);
+       */
    }
    
    
-//   printf("%.2f %.2f %.2f %i %i\n",pigx,pigy,pigz,gridx,gridy);
+//   printf("%.2f %.2f %.2f %i %i\n",gs.pigx,gs.pigy,gs.pigz,gs.gridx,gs.gridy);
    
+
+   if (show_menu) {
+      glDisable(GL_LIGHTING);
+//      glViewport(0,0,640,480);
+      glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+      gluOrtho2D(0,320,0,200);
+      glMatrixMode(GL_MODELVIEW);
+      glLoadIdentity();  
+
+      
+      glBegin(GL_QUADS);
+        glNormal3f(0,0,1);
+        glVertex3f(5,5,-0.1);
+        glVertex3f(100,5,-0.1);
+        glVertex3f(100,100,-0.1);
+        glVertex3f(5,100,-0.1);
+      glEnd();
+      
+      glColor3f(1.0,0.0,0.0);
+            glRasterPos3f(5,5,0);
+      vmwGLString("A VMW SOFTWARE PRODUCTION",font,16,32,2);
+       
+      reshape(640,480);
+//      gluPerspective(60.0,(GLfloat)640/(GLfloat)480,1.0,100.0);
+//      glMatrixMode(GL_MODELVIEW);
+   }
    
    
    glFlush();
@@ -531,190 +437,21 @@ void display(void) {
    glDisable(GL_TEXTURE_2D);
 }
 
-void reshape(int w,int h) {
-   glViewport(0,0,(GLsizei)w,(GLsizei)h);
-   glMatrixMode(GL_PROJECTION);
-   glLoadIdentity();
-   gluPerspective(60.0,(GLfloat)w/(GLfloat)h,1.0,100.0);
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-   //glTranslatef(0.0,0.0,-3.6);
-}
 
 
-#define UP_PRESSED    1
-#define DOWN_PRESSED  2
-#define LEFT_PRESSED  4
-#define RIGHT_PRESSED 8
-#define A_PRESSED    16
-#define Z_PRESSED    32
-
-int check_keyboard(void) {
-
-      
-   
-    SDL_Event event;
-   
-    static int keys_down=0;
-    int momentary=0;
-    int button,axis,jdirection;
-   
-    int keypressed;
-
-    while ( SDL_PollEvent(&event) ) {
-       if ( event.type == SDL_QUIT ) {
-          done = 1;
-	  return 1;
-       }
-
-       if (event.type == SDL_VIDEORESIZE) {
-	  printf("RESIZE\b");	  
-       }
-       
-       if (event.type == SDL_JOYBUTTONDOWN) {
-	  button=event.jbutton.button;
-	  switch(button) {
-	     case 0: keys_down|=A_PRESSED;
-	             break;
-	     case 1: keys_down|=Z_PRESSED;
-	             break;
-	  }
-	  //printf("Button: %i\n",button);
-       }
-       
-       if (event.type == SDL_JOYAXISMOTION) {
-	  axis=event.jaxis.axis;
-	  jdirection=event.jaxis.value;
-	  if (axis==0) {  /* X */
-	     if (jdirection>20000) {
-		keys_down|=RIGHT_PRESSED;
-	     }
-	     else if (jdirection<-20000) {
-		keys_down|=LEFT_PRESSED;
-	     }	     
-	     else if ((jdirection>5000) || (jdirection<-5000)) {
-		keys_down&=(~RIGHT_PRESSED);
-		keys_down&=(~LEFT_PRESSED);
-//			     printf("X: %i\n",jdirection);
-	     }
-
-	  }
-	  if (axis==1) {  /* Y */
-	     if (jdirection>20000) {
-		keys_down|=DOWN_PRESSED;
-	     }
-	     else if (jdirection<-20000) {
-		keys_down|=UP_PRESSED;
-	     }
-	     else if ((jdirection>5000) || (jdirection<-5000)) {
-		keys_down&=(~UP_PRESSED);
-		keys_down&=(~DOWN_PRESSED);
-//			     printf("Y: %i\n",jdirection);
-	     }
-	     
-	     
-//	     printf("Y: %i\n",jdirection);
-	  }
-	  
-       }
-       
-       
-       if (event.type == SDL_JOYBUTTONUP) {
-	  button=event.jbutton.button;
-	  switch(button) {
-	     case 0: keys_down&=(~A_PRESSED);
-	             break;
-	     case 1: keys_down&=(~Z_PRESSED);
-	             break;
-	  }
-	  //printf("Button: %i\n",button);
-       }
-       
-       if (event.type == SDL_KEYUP) {
-	  keypressed=event.key.keysym.sym;
-	  
-	  switch(keypressed) {
-              case SDLK_UP: keys_down&=(~UP_PRESSED);	 
-	                    break;
-	      case SDLK_DOWN: keys_down&=(~DOWN_PRESSED);
-	                    break;
-	      case SDLK_RIGHT: keys_down&=(~RIGHT_PRESSED);
-	                    break;
-	     case SDLK_LEFT: keys_down&=(~LEFT_PRESSED);
-	                    break;
-	   case 'a': case 'A': keys_down&=(~A_PRESSED); break;
-	   case 'z': case 'Z': keys_down&=(~Z_PRESSED); break;
-	  }
-       }
-       
-       if ( event.type == SDL_KEYDOWN ) {
-	  keypressed=event.key.keysym.sym;
-	   
-	  switch (keypressed) {
-	   case 'L':
-	   case 'l': use_lighting=!(use_lighting); break;
-	     
-	   case 'T':
-	   case 't': use_textures=!(use_textures); break;
-
-	   case 'k': case 'K':
-	             camera_direction+=(10.0*PI)/180;
-	             if (camera_direction>2*PI) camera_direction-=2*PI;
-	             camerax=10*sin(camera_direction);
-	             cameray=10*cos(camera_direction);
-	             break;
-	   case 'j': case 'J':
-	             camera_direction-=(10.0*PI)/180;
-	             if (camera_direction<0.0) camera_direction+=2*PI;
-	             camerax=10*sin(camera_direction);
-	             cameray=10*cos(camera_direction);
-	             break;
-	  case 'm': case 'M':
-	             cameraz-=0.5;
-	             break;
-	   case 'i': case 'I':
-	             cameraz+=0.5;;
-	             break;
-	     
-	   case 'a': case 'A':
-	                     momentary|=A_PRESSED;
-	                     keys_down|=A_PRESSED;
-	                     break;
-	     
-	   case 'z': case 'Z':
-	                     momentary|=Z_PRESSED;
-	                     keys_down|=Z_PRESSED;
-	                     break;  
-	     
-	   case SDLK_ESCAPE: done = 1; 
-	                     return 1;  
-	                     break;
-	   case SDLK_RIGHT:  momentary|=RIGHT_PRESSED;
-                             keys_down|=RIGHT_PRESSED;	                     
-                             break;
-           case SDLK_LEFT:   momentary|=LEFT_PRESSED;
-	                     keys_down|=LEFT_PRESSED;
-                             break;
-           case SDLK_UP:     
-	                     momentary|=UP_PRESSED;
-	                     keys_down|=UP_PRESSED;
-	                     break;
-	   case SDLK_DOWN:   momentary|=DOWN_PRESSED;
-	                     keys_down|=DOWN_PRESSED;
-                             break;
-	  }
-       }
-    }
-    return (momentary<<16)+keys_down;
-}
+float scale=0.0;
 
 int main(int argc, char **argv) {
 
    SDL_Joystick *joy;
    
-   int frames=0,msecs=0,old_msecs=0,keyspressed=0;
+   int frames=0,fps_msecs=0,old_fps_msecs=0,keyspressed=0;
    int xsize=640,ysize=480;
+    int tempx,tempy;
+   float x_offset,y_offset;
 
+    char key_alpha;
+   
    if (argc==2) {
       xsize=320;
       ysize=200;
@@ -762,100 +499,283 @@ int main(int argc, char **argv) {
 //   display();
  
     opener();
-
+    do_story();
+   
     leonard=setup_pig_list(0,0);
+    spaceships[0]=setup_spaceship(0);
     whoami=leonard;
-    
+
+    old_msecs=SDL_GetTicks();
+   
     while ( ! done ) {
        
        frames++;
-//       printf("%i\n",frames);
+       new_msecs=SDL_GetTicks();
+         
+          /* * how far to go in 1s */
+       scale=(new_msecs-old_msecs)/50.0;
+       old_msecs=new_msecs;
+
        if (frames%100==0) {
-	  old_msecs=msecs;
-	  msecs=SDL_GetTicks();
-          printf("FPS=%.2f\n", frames/((msecs-old_msecs)/1000.0));	 
+	  old_fps_msecs=fps_msecs;
+	  fps_msecs=SDL_GetTicks();
+          printf("FPS=%.2f\n", frames/((fps_msecs-old_fps_msecs)/1000.0));	 
 	  frames=0;
        }
-       keyspressed=check_keyboard();
-       keyspressed&=0xffff; /* mask off momentary for now */
-       
-       if (keyspressed&RIGHT_PRESSED) {
-	  direction-=10;
-       }
-       if (keyspressed&LEFT_PRESSED) {
-          direction+=10;    
-       }
-       if (keyspressed&UP_PRESSED) {
-          pigy+=sin( (direction*PI)/180.0);
-          pigx+=cos( (direction*PI)/180.0);
-	     
-	                     if (pigx>=2.0) { 
-				gridx++; 
-				pigx-=4.0;
-				
-			     }
-	                     if (pigx<=-2.0) {
-				gridx--;
-				pigx+=4.0;
-			     }
-	                     if (pigy>=2.0) {
-				gridy++;
-				pigy-=4.0;
-			     }
-	                     if (pigy<=-2.0) {
-				gridy--;
-				pigy+=4.0;
-			     }
-	      
-	                     if (gridx>=40) gridx=0;
-	                     if (gridx<0) gridx=39;
-	                      
-	                     if (gridy>=40) gridy=0;
-	                     if (gridy<0) gridy=39;
-	    
-       }
-       if (keyspressed&DOWN_PRESSED) {
 
-	                     pigy-=sin( (direction*PI)/180.0);
-                             pigx-=cos( (direction*PI)/180.0);
+       keyspressed=check_keyboard(&key_alpha);
+
+       switch(key_alpha) {
+          case 'l': use_lighting=!(use_lighting); break;
+	  case 'k':  camera_direction+=(10.0*PI)/180;
+	             if (camera_direction>2*PI) camera_direction-=2*PI;
+	             camerax=10*sin(camera_direction);
+	             cameray=10*cos(camera_direction);
+	             break;
+	  case 'j':  camera_direction-=(10.0*PI)/180;
+	             if (camera_direction<0.0) camera_direction+=2*PI;
+	             camerax=10*sin(camera_direction);
+	             cameray=10*cos(camera_direction);
+	             break;
+	  case 'm':
+	             cameraz-=0.5;
+	             break;
+	   case 'i': 
+	             cameraz+=0.5;;
+	             break;
+
+	   case 'P': case 'p':
+	             show_menu=!show_menu;
+	             break;
 	     
-	     	             if (pigx>=2.0) { 
-				gridx++; 
-				pigx-=4.0;
+       }
+
+       keyspressed&=0xffff; /* mask off momentary for now */
+
+       if (keyspressed&ESC_PRESSED) {
+	  done=1;
+       }
+   
+       turn_right=turn_left=0,draw_splash=0;
+       
+       if (gs.in_spaceship) {
+	  if (keyspressed&RIGHT_PRESSED) {
+	     gs.direction-=10*scale;
+	     turn_right=1;
+          }
+          if (keyspressed&LEFT_PRESSED) {
+             gs.direction+=10*scale;
+	     turn_left=1;
+          }
+          if (keyspressed&A_PRESSED) {
+             gs.pigy+=sin( (gs.direction*PI)/180.0)*scale;
+             gs.pigx+=cos( (gs.direction*PI)/180.0)*scale;
+          }
+          if (keyspressed&Z_PRESSED) {
+             gs.pigy-=sin( (gs.direction*PI)/180.0)*scale;
+             gs.pigx-=cos( (gs.direction*PI)/180.0)*scale;       
+          }
+
+	  
+	  if (keyspressed&UP_PRESSED) {
+	     gs.pigz+=1.0*scale;
+          }
+          if (keyspressed&DOWN_PRESSED) {
+	     gs.pigz-=1.0*scale;
+
+          }
+	     /* Collision detection */
+	  
+	  
+	  /* spaceship is 3x1.5 more or less */
+	  /* so check all 4 corners */
+          /* Double check these later */
+	  
+	  x_offset=  sin(((gs.direction-26.565)*PI)/180.0)*1.677;
+	  y_offset=  cos(((gs.direction-26.565)*PI)/180.0)*1.677;
+	  
+	  /* lower right */
+	  
+	  tempx=gs.gridx;  tempy=gs.gridy;
+	  if ((x_offset+gs.pigx)>=2.0) {
+	     tempx++;
+	     if (tempx>=40) tempx=0;
+	  }
+	  if ((y_offset+gs.pigy)>=2.0) {
+	     tempy++;
+	     if (tempy>=40) tempy=0;
+	  }
+	  if ((gs.pigx-x_offset)<=-2.0) {
+	     tempx--;
+	     if (tempx<0) tempx=39;
+	  }
+	  if ((gs.pigy-y_offset)<=-2.0) {
+	     tempy--;
+	     if (tempy<0) tempy=39;
+	  }
+	  if (gs.pigz<terrain_heights[world_map[tempx][tempy].terrain_type]+0.89) { 
+
+//	     printf("SPLASH %f %f\n",gs.pigz,terrain_heights[world_map[tempx][tempy].terrain_type]+0.9);
+	     gs.pigz=terrain_heights[world_map[tempx][tempy].terrain_type]+0.9;
+	     draw_splash=1;
+	  }	  	  
+	  
+	  
+	  	  /* lower left */
+	  
+	  tempx=gs.gridx;  tempy=gs.gridy;
+	  if ((gs.pigx-x_offset)>=2.0) {
+	     tempx++;
+	     if (tempx>=40) tempx=0;
+	  }
+	  if ((y_offset+gs.pigy)>=2.0) {
+	     tempy++;
+	     if (tempy>=40) tempy=0;
+	  }
+	  if ((gs.pigx+x_offset)<=-2.0) {
+	     tempx--;
+	     if (tempx<0) tempx=39;
+	  }
+	  if ((gs.pigy-y_offset)<=-2.0) {
+	     tempy--;
+	     if (tempy<0) tempy=39;
+	  }
+	  if (gs.pigz<terrain_heights[world_map[tempx][tempy].terrain_type]+0.89) { 
+	     gs.pigz=terrain_heights[world_map[tempx][tempy].terrain_type]+0.9;
+	     draw_splash=1;
+	  }	  	  
+	  
+	  	  /* upper left */
+	  
+	  tempx=gs.gridx;  tempy=gs.gridy;
+	  if ((gs.pigx-x_offset)>=2.0) {
+	     tempx++;
+	     if (tempx>=40) tempx=0;
+	  }
+	  if ((gs.pigy-y_offset)>=2.0) {
+	     tempy++;
+	     if (tempy>=40) tempy=0;
+	  }
+	  if ((gs.pigx+x_offset)<=-2.0) {
+	     tempx--;
+	     if (tempx<0) tempx=39;
+	  }
+	  if ((gs.pigy+y_offset)<=-2.0) {
+	     tempy--;
+	     if (tempy<0) tempy=39;
+	  }
+	  if (gs.pigz<terrain_heights[world_map[tempx][tempy].terrain_type]+0.89) { 
+	     gs.pigz=terrain_heights[world_map[tempx][tempy].terrain_type]+0.9;
+	     draw_splash=1;
+	  }	  	  
+	  
+	  
+	  	  /* upper right */
+	  
+	  tempx=gs.gridx;  tempy=gs.gridy;
+	  if ((x_offset+gs.pigx)>=2.0) {
+	     tempx++;
+	     if (tempx>=40) tempx=0;
+	  }
+	  if ((gs.pigy-y_offset)>=2.0) {
+	     tempy++;
+	     if (tempy>=40) tempy=0;
+	  }
+	  if ((gs.pigx-x_offset)<=-2.0) {
+	     tempx--;
+	     if (tempx<0) tempx=39;
+	  }
+	  if ((gs.pigy+y_offset)<=-2.0) {
+	     tempy--;
+	     if (tempy<0) tempy=39;
+	  }
+	  if (gs.pigz<terrain_heights[world_map[tempx][tempy].terrain_type]+0.89) { 
+	     gs.pigz=terrain_heights[world_map[tempx][tempy].terrain_type]+0.9;
+	     draw_splash=1;
+	  }	  	  
+       
+	  
+	  
+	  if (gs.pigz>5) gs.pigz=5;
+	  if (gs.pigx>=2.0) { 
+	     gs.gridx++; 
+	     gs.pigx-=4.0;
+	  }
+	  if (gs.pigx<=-2.0) {
+	     gs.gridx--;
+	     gs.pigx+=4.0;
+	  }
+	  if (gs.pigy>=2.0) {
+	     gs.gridy++;
+	     gs.pigy-=4.0;
+	  }
+	  if (gs.pigy<=-2.0) {
+	     gs.gridy--;
+	     gs.pigy+=4.0;
+	  }
+	      
+	  if (gs.gridx>=40) gs.gridx=0;
+	  if (gs.gridx<0) gs.gridx=39;
+	  if (gs.gridy>=40) gs.gridy=0;
+	  if (gs.gridy<0) gs.gridy=39;
+	
+       }
+       else {
+          if (keyspressed&RIGHT_PRESSED) {
+	     gs.direction-=10;
+          }
+          if (keyspressed&LEFT_PRESSED) {
+             gs.direction+=10;    
+          }
+          if (keyspressed&UP_PRESSED) {
+             gs.pigy+=sin( (gs.direction*PI)/180.0);
+             gs.pigx+=cos( (gs.direction*PI)/180.0);
+          }
+          if (keyspressed&DOWN_PRESSED) {
+             gs.pigy-=sin( (gs.direction*PI)/180.0);
+             gs.pigx-=cos( (gs.direction*PI)/180.0);       
+          }
+	  if (keyspressed&A_PRESSED) {
+	     gs.pigz-=1.0;
+	     if (gs.pigz<-5) gs.pigz=-5;
+          }
+          if (keyspressed&Z_PRESSED) {
+	     gs.pigz+=1.0;
+	     if (gs.pigz>-0.5) gs.pigz=-0.5;
+          }
+       
+	     	             if (gs.pigx>=2.0) { 
+				gs.gridx++; 
+				gs.pigx-=4.0;
 				
 			     }
-	                     if (pigx<=-2.0) {
-				gridx--;
-				pigx+=4.0;
+	                     if (gs.pigx<=-2.0) {
+				gs.gridx--;
+				gs.pigx+=4.0;
 			     }
-	                     if (pigy>=2.0) {
-				gridy++;
-				pigy-=4.0;
+	                     if (gs.pigy>=2.0) {
+				gs.gridy++;
+				gs.pigy-=4.0;
 			     }
-	                     if (pigy<=-2.0) {
-				gridy--;
-				pigy+=4.0;
+	                     if (gs.pigy<=-2.0) {
+				gs.gridy--;
+				gs.pigy+=4.0;
 			     }
 	      
-	                     if (gridx>=40) gridx=0;
-	                     if (gridx<0) gridx=39;
+	                     if (gs.gridx>=40) gs.gridx=0;
+	                     if (gs.gridx<0) gs.gridx=39;
 	                      
-	                     if (gridy>=40) gridy=0;
-	                     if (gridy<0) gridy=39;
+	                     if (gs.gridy>=40) gs.gridy=0;
+	                     if (gs.gridy<0) gs.gridy=39;
 	     
-       }
-       if (keyspressed&A_PRESSED) {
-	  pigz-=1.0;
-	  if (pigz<-5) pigz=-5;
-       }
-       if (keyspressed&Z_PRESSED) {
-	  pigz+=1.0;
-	  if (pigz>-0.5) pigz=-0.5;
+       
        }
        
        
        
        display();       
+/* Emulate low frame-rates */
+//usleep(100000); 
     }
     SDL_Quit();
 

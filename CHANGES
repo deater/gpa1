@@ -28,3 +28,12 @@
 22 July 2001
 + Much better keyboard control
 + Added joystick support
++ Added spaceship
+
+23 July 2001
++ Added hackish "shadow" of spaceship
+
+24 July 2001
++ Added banked turns
++ Added water "wake" when flying low over the water.
++ Reorganize the source files a bit
