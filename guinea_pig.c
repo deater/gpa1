@@ -1,9 +1,12 @@
-#include <GL/glut.h>
+#include <SDL/SDL.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
 #include "vmw_texture.h"
+#include "vmw_glfont.h"
 
 #define PI 3.141592653589793238462643383279502884197169399
   
@@ -22,6 +25,8 @@ static GLuint texName[6];
 
 
 float direction=0.0,pigx=0.0,pigy=0.0,pigz=1.0;
+
+int done=0;
 
 
 void LoadTextures(void) {
@@ -66,14 +71,42 @@ void LoadTextures(void) {
    }
 }
 
+GLubyte *font;
+
+GLubyte big_f[24]={
+   0xc0,0x00,
+        0xc0,0x00,
+        0xc0,0x00,
+        0xc0,0x00,
+        0xc0,0x00,
+        0xc0,0x00,
+        0xc0,0x00,
+        0xc0,0x00,
+        0xc0,0x00,
+        0xc0,0x00,
+        0xc0,0x00,
+        0xc0,0x00,
+};
+
+
 void init(void) {
+//   glViewport(0,0,640,480);
+
+   glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+   font=vmwLoadFont("vmw.fnt",8,16,128,2);
    glClearColor(0.0,0.0,0.0,0.0);
+   glClearDepth(1.0);
    glShadeModel(GL_SMOOTH);
 //   glEnable(GL_LIGHTING);
 //   glEnable(GL_LIGHT0);
    glEnable(GL_DEPTH_TEST);
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+   
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+//   gluPerspective(45.0f,(GLfloat)640/(GLfloat)480,0.1f,100.0f);
+   
    LoadTextures();
    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
    
@@ -134,6 +167,225 @@ void init(void) {
    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64,
 		64,0,GL_RGBA,GL_UNSIGNED_BYTE,leaf_texture);
 }
+
+
+int triangle;
+
+
+void opener() {
+ 
+
+
+    int i,frames=0,msecs=0,startmsecs=0;
+   
+    float  red1x,red1y;
+      
+
+   
+    GLfloat light_position[]={0.0,0.0,10.0,0.0
+    };
+   
+    GLfloat lmodel_ambient[]={0.9,0.9,0.9,1.0
+    };
+   
+   
+    GLfloat white_light[]={1.0,1.0,1.0,1.0
+    };
+   
+
+    GLfloat red_material[2][4]={
+	 {0.2,0.0,0.0,1.0},  /* Ambient */
+         {0.9,0.1,0.1,1.0}   /* Diffuse */
+    };
+   
+    GLfloat green_material[2][4]={
+   	 {0.0,0.2,0.0,1.0},  /* Ambient */
+         {0.1,0.9,0.1,1.0}   /* Diffuse */
+    };
+   
+    GLfloat blue_material[2][4]={
+   	 {0.0,0.0,0.2,1.0},  /* Ambient */
+         {0.1,0.1,0.9,1.0}   /* Diffuse */
+    };
+   
+    GLfloat no_mat[]={0.0,0.0,0.0,1.0
+    };
+    
+    GLfloat no_shiny[]={0.0
+    };
+   
+
+
+    glLoadIdentity();
+    gluLookAt(-0.00,0.0,15.0,
+	     0.0,0.0,0.0,
+	     0.0,1.0,1.0);
+
+   
+
+   
+   triangle=glGenLists(1);
+   glNewList(triangle,GL_COMPILE);
+   
+   glBegin(GL_TRIANGLES);
+
+   glNormal3f(0.0,0.0,1.0);
+   glVertex3f(-2.0,2.0,0.5);
+   glVertex3f( 2.0,2.0,0.5);
+   glVertex3f( 0.0,-2.0,0.5);
+   
+   glEnd();
+   
+   glBegin(GL_QUADS);
+   
+   glNormal3f(0.0,1.0,0.0);
+   glVertex3f(-2.0, 2.0, 0.5);
+   glVertex3f(-2.0, 2.0,-0.5);
+   glVertex3f( 2.0, 2.0,-0.5);
+   glVertex3f( 2.0, 2.0, 0.5);
+   
+   
+   glNormal3f( 1.4142,-1.4142,0.0);
+   glVertex3f( 2.0, 2.0, 0.5);
+   glVertex3f( 2.0, 2.0,-0.5);
+   glVertex3f( 0.0,-2.0,-0.5);
+   glVertex3f( 0.0,-2.0, 0.5);
+   
+   glNormal3f(-1.4142,-1.4142,0.0);
+   glVertex3f( 0.0,-2.0, 0.5);
+   glVertex3f( 0.0,-2.0,-0.5);
+   glVertex3f(-2.0, 2.0,-0.5);
+   glVertex3f(-2.0, 2.0, 0.5);
+   
+   glEnd();
+   
+   glBegin(GL_TRIANGLES);
+   
+   glNormal3f(0.0,0.0,-1.0);
+   glVertex3f(-2.0,  2.0, -0.5);
+   glVertex3f( 2.0,  2.0, -0.5);
+   glVertex3f( 0.0, -2.0, -0.5);
+   
+   glEnd();
+
+   glEndList();
+
+
+   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+   glLightfv(GL_LIGHT0, GL_DIFFUSE, white_light);
+   glLightfv(GL_LIGHT0, GL_SPECULAR,white_light);
+
+/*   
+   glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
+   glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
+   glLightfv(GL_LIGHT1, GL_SPECULAR,white_light);
+*/  
+   
+ 
+   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
+   
+   glEnable(GL_LIGHTING);
+   
+   glEnable(GL_LIGHT0);
+//   glEnable(GL_LIGHT1);
+   glEnable(GL_DEPTH_TEST);
+   
+
+   red1x=-20.0; red1y=0.0;
+
+   startmsecs=SDL_GetTicks();
+
+    for(i=180;i<361;i++) {
+       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      
+
+          /* Red */
+       glColor3f(1.0,0.0,0.0);
+       glMaterialfv(GL_FRONT,GL_AMBIENT,  red_material[0]);
+       glMaterialfv(GL_FRONT,GL_DIFFUSE, red_material[1]);
+       glMaterialfv(GL_FRONT,GL_SPECULAR, no_mat);
+       glMaterialfv(GL_FRONT,GL_SHININESS, no_shiny);
+       glMaterialfv(GL_FRONT,GL_EMISSION, no_mat);
+      
+       glPushMatrix();
+       glTranslatef(-4 - ((360.0-i)/18.0),0,0.0);
+       glRotatef(i,1,1,1);
+       glCallList(triangle);
+       glPopMatrix();
+      
+          /* Blue */
+       glColor3f(0.0,0.0,1.0);
+      
+       glMaterialfv(GL_FRONT,GL_AMBIENT, blue_material[0]);
+       glMaterialfv(GL_FRONT,GL_DIFFUSE, blue_material[1]);
+       glMaterialfv(GL_FRONT,GL_SPECULAR, no_mat);
+       glMaterialfv(GL_FRONT,GL_SHININESS, no_shiny);
+       glMaterialfv(GL_FRONT,GL_EMISSION, no_mat);
+      
+       glPushMatrix();
+       glTranslatef(0,((360.0-i)/18.0),0.0);
+       glRotatef(i,1,1,1);      
+       glCallList(triangle);
+       glPopMatrix();
+       
+       glPushMatrix();
+       glTranslatef(4+((360.0-i)/18.0),0+((360.0-i)/18.0),0.0);
+       glRotatef(i,1,1,1);      
+       glCallList(triangle);
+       glPopMatrix();
+       
+          /* Green */
+       glColor3f(0.0,0.0,1.0);
+      
+       glMaterialfv(GL_FRONT,GL_AMBIENT, green_material[0]);
+       glMaterialfv(GL_FRONT,GL_DIFFUSE, green_material[1]);
+       glMaterialfv(GL_FRONT,GL_SPECULAR, no_mat);
+       glMaterialfv(GL_FRONT,GL_SHININESS, no_shiny);
+       glMaterialfv(GL_FRONT,GL_EMISSION, no_mat);
+      
+       glPushMatrix();
+       glTranslatef(-2,-((360.0-i)/18.0),0.0);
+       glRotatef(180,1,0,0);
+       glRotatef(i,1,1,1);      
+       glCallList(triangle);
+       glPopMatrix();
+       
+       glPushMatrix();
+       glTranslatef(2+((360.0-i)/18.0),-((360.0-i)/18.0),0.0);
+       glRotatef(180,1,0,0);
+       glRotatef(i,1,1,1);      
+       glCallList(triangle);
+       glPopMatrix();
+      
+      
+
+            
+      glFlush();
+
+      SDL_GL_SwapBuffers();
+      frames++;
+
+      if (frames%10==0) {
+	 msecs=SDL_GetTicks();
+         printf("FPS=%f\n",((float) frames)/((msecs-startmsecs)/1000.0));
+      }
+      
+       
+//      usleep(1000);
+   }
+
+   glDisable(GL_LIGHTING);
+
+   glColor3f(1.0,1.0,1.0);
+
+   glRasterPos3f(-2.45,-1.5,10);
+   
+   vmwGLString("A VMW SOFTWARE PRODUCTION",font,16,32,2);
+   
+   glFlush();
+   SDL_GL_SwapBuffers();
+}
+
 
 
 
@@ -907,7 +1159,7 @@ void display(void) {
    draw_carrot(-4.0,3.0,0.5,90);
    
    glFlush();
-   glutSwapBuffers();
+   SDL_GL_SwapBuffers();
    
 }
 
@@ -918,79 +1170,80 @@ void reshape(int w,int h) {
    gluPerspective(60.0,(GLfloat)w/(GLfloat)h,1.0,30.0);
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
-   glTranslatef(0.0,0.0,-3.6);
+   //glTranslatef(0.0,0.0,-3.6);
 }
 
-void keyboard(unsigned char key, int x, int y) {
+int check_keyboard(void) {
 
- switch(key) {
-
-      case 's': 
-    glRotated(22,0, 0, 1);
-    display();    
-    break;
-  case 'x': 
-    glRotated(22,0, 1, 0);
-    display();    
-    break;
-
-    case 'w': 
-    glRotated(22,1, 0, 0);
-    display();    
-
-    
-  case 'a': 
-    glTranslatef(0.0, 0.0, -1.0);
-    display();    
-    break;
-  case 'z': 
-    glTranslatef(0.0, 0.0, 1.0);
-    display();    
-    break;
-    
-  case 'k': 
-
-     direction-=10;
-     display();
-     break;
-    
-  case 'j': 
-      direction+=10;    
-      display();
-      break;
-    
-  case 'i': 
-         pigy+=sin( (direction*PI)/180.0);
-         pigx+=cos( (direction*PI)/180.0);
-    
-    display();
-    break;
-    
-  case 'm': 
-         pigy-=sin( (direction*PI)/180.0);
-         pigx-=cos( (direction*PI)/180.0);
-    
-    display();
-    break;
-    
-  case 27:
-     exit(0);
-     break;
- default: break;
-}
+      
+   
+    SDL_Event event;
+    int keypressed;
+	       
+   
+   
+    while ( SDL_PollEvent(&event) ) {
+       if ( event.type == SDL_QUIT ) {
+          done = 1;
+	  return 1;
+       }
+		          
+       if ( event.type == SDL_KEYDOWN ) {
+	  keypressed=event.key.keysym.sym;
+	   
+	  switch (keypressed) {
+	   case SDLK_ESCAPE: done = 1; 
+	                     return 1;  
+	                     break;
+	   case SDLK_RIGHT:  direction-=10;
+                             display();
+                             return 1;
+           case SDLK_LEFT:   direction+=10;    
+                             display();
+                             return 1;
+           case SDLK_UP:     pigy+=sin( (direction*PI)/180.0);
+                             pigx+=cos( (direction*PI)/180.0);
+                             display();
+	                     return 1;
+	   case SDLK_DOWN:   pigy-=sin( (direction*PI)/180.0);
+                             pigx-=cos( (direction*PI)/180.0);
+                            display();
+                             return 1;
+	  }
+       }
+    }
+    return 0;
 }
 
 int main(int argc, char **argv) {
-   glutInit(&argc, argv);
-   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
-   glutInitWindowSize(640,480);
-   glutInitWindowPosition(100,100);
    
-   glutCreateWindow(argv[0]);
+   
+       /* Initialize SDL */
+   if ( SDL_Init(SDL_INIT_VIDEO)<0) {
+      printf("Error trying to init SDL\n");
+      return -1;
+   }
+   
+       /* Create a 640x480 OpenGL screen */
+   if ( SDL_SetVideoMode(640, 480, 0, SDL_OPENGL) == NULL ) {
+      printf("Unable to create OpenGL screen: %s\n", SDL_GetError());
+      SDL_Quit();
+      return -2;
+   }
+   
+   SDL_WM_SetCaption("Guinea Pig Adventure...",NULL);
+   
    init();
-   glutDisplayFunc(display);
-   glutReshapeFunc(reshape);
-   glutKeyboardFunc(keyboard);
-   glutMainLoop();
+   reshape(640,480);
+   
+//   display();
+ 
+    opener();
+   
+    while ( ! done ) {
+       check_keyboard();
+    }
+    SDL_Quit();
+
    return 0;
 }

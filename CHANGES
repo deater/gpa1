@@ -1,0 +1,7 @@
+25 June 2001
++ Merged in new non-square guinea pig from an ac3d generated .iv file
++ Put together version 0.0.1 which let you move the pig around with
+  a carrot
+  
+27 June 2001
++ Switched from glut to SDL
