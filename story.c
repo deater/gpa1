@@ -15,6 +15,8 @@
 
 #include "keyboard.h"
 
+#include "spaceship.h"
+
 #include "textures.h"
 
     /* As much as I have memorized... */
@@ -22,8 +24,6 @@
   
 
 
-
-extern GLuint spaceships[2];
 
 
    
@@ -142,15 +142,16 @@ void do_story(int width,int height) {
      GLfloat light_position[]={1.0,0.0,0.0,0.0
      };
    
-//     GLfloat light_ambient[]={0.5,0.5,0.5,1.0
-//     };
+     GLfloat light_ambient[]={0.65,0.65,0.65,1.0
+     };
        GLfloat lmodel_ambient[]={0.4,0.4,0.4,1.0
        };
    
    
        GLfloat white_light[]={1.0,1.0,1.0,1.0
        };
-   
+
+      
     glViewport(0,0,(GLsizei)width,(GLsizei)height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -179,6 +180,7 @@ void do_story(int width,int height) {
 	  frames_msec=SDL_GetTicks();
           printf("FPS: %.2f\n",frames/((frames_msec-old_frames_msec)/1000.0));
 	  frames=0;
+	  //   printf("%.2f,%.2f,%.2f\n",camerax,cameray,cameraz);
 	  old_frames_msec=frames_msec;
        }
        
@@ -198,19 +200,26 @@ void do_story(int width,int height) {
 
    glLoadIdentity();
 
-   gluLookAt(camerax,cameray,cameraz,
+   gluLookAt(camerax-15,cameray+25,cameraz,
 	     0.0,0.0,0.0,
 	     0.0,0.0,1.0);
    
 
       glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-//      glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+       
+
       glLightfv(GL_LIGHT0, GL_DIFFUSE, white_light);
       glLightfv(GL_LIGHT0, GL_SPECULAR,white_light);
       
       glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
 //      glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL,GL_SEPARATE_SPECULAR_COLOR);
 
+      glLightfv(GL_LIGHT1, GL_POSITION, light_position); 
+      glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
+      glLightfv(GL_LIGHT1, GL_SPECULAR,white_light);
+      
+      glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
+       
       glEnable(GL_LIGHTING);
       glEnable(GL_LIGHT0);
 
@@ -297,6 +306,21 @@ void do_story(int width,int height) {
 
    glPopMatrix();
 
+   glPushMatrix();
+
+
+   glTranslatef(camerax,cameray,cameraz);
+   glScalef(2,2,2);   
+   glRotatef(270,0,0,1);   
+   glEnable(GL_LIGHT1);   
+
+
+   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);       
+   glCallList(spaceships[1]);
+       glDisable(GL_LIGHT1);       
+       
+   glPopMatrix();
+       
    glDisable(GL_LIGHTING);
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
@@ -304,8 +328,34 @@ void do_story(int width,int height) {
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
    glColor3f(1.0,0.0,0.0);
-   glRasterPos3f(5,170,0);
-   vmwGLString("THE MEERSCHWEINCHEN SYSTEM",font);
+//   glRasterPos3f(5,170,0);
+//   vmwGLString("THE MEERSCHWEINCHEN SYSTEM",font);
+  
+   glTranslatef(5,170,0);
+   glRotatef(270,1,0,0);
+          glScalef(9,9,9);
+
+//   glCallList(texture_font_list[65]);
+       glEnable(GL_TEXTURE_2D);
+   texture_put_string("THE MEERSCHWEINCHEN SYSTEM");   
+  
+       
+	  
+#if 0       
+   glEnable(GL_TEXTURE_2D);  
+   glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+   glBindTexture(GL_TEXTURE_2D,font_texture);
+   glBegin(GL_QUADS);  
+      glTexCoord2f(1,1);
+      glVertex3f(0,128,0);
+      glTexCoord2f(0,1);
+      glVertex3f(0,0,0);
+      glTexCoord2f(0,0);
+      glVertex3f(128,0,0);
+      glTexCoord2f(1,0);
+      glVertex3f(128,128,0);
+   glEnd();    
+#endif       
        
     glViewport(0,0,(GLsizei)width,(GLsizei)height);
     glMatrixMode(GL_PROJECTION);

@@ -234,7 +234,7 @@ void setup_map(void) {
     init_point(9,14,BEACHEND_TERRAIN,90,SOUTHERN_PAMPAS);
 
        /* Towns */
-    init_point(5,18,OCEAN_CITY_TERRAIN,0,JOPPATOWNE_AREA);
+    init_point(5,18,JOPPATOWNE_TERRAIN,0,JOPPATOWNE_AREA);
     init_point(8,26,OCEAN_CITY_TERRAIN,90,OCEAN_CITY_AREA);
     init_point(10,33,ARCTIC_BASE_TERRAIN,0,ARCTIC_BASE_AREA);
    
@@ -277,6 +277,7 @@ void setup_terrain(void) {
           /* Ocean City */
    terrain[OCEAN_CITY_TERRAIN]=glGenLists(1);
    glNewList(terrain[OCEAN_CITY_TERRAIN],GL_COMPILE);
+
    
    glEnable(GL_TEXTURE_2D);
    glBindTexture(GL_TEXTURE_2D,textures[GRASS_TEXTURE]);
@@ -603,7 +604,7 @@ void setup_terrain(void) {
    glDisable(GL_TEXTURE_2D);
    
    glEndList();
-
+   terrain[JOPPATOWNE_TERRAIN]=terrain[OCEAN_CITY_TERRAIN];
 /*******************************************************
  * OCEAN
  ********************************************************/

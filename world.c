@@ -26,6 +26,10 @@
 #include "battle.h"
 #include "setup_enemies.h"
 
+#include "joppatowne.h"
+
+#include "tfv.h"
+
     /* As much as I have memorized... */
 #define PI 3.141592653589793238462643383279502884197169399
   
@@ -35,7 +39,6 @@
 extern int use_lighting;
 extern int show_fps;
 
-   GLuint leonard;
 extern GLuint spaceships[2];
    GLuint terrain[NUM_TERRAINS];
 
@@ -73,6 +76,7 @@ int in_game_menu(game_state_type *gs) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     result=check_keyboard(&alpha,1);
+
    
     while (1) {
        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -324,6 +328,18 @@ void render_world(game_state_type *gs) {
 		glTranslatef(gs->spaceship_xoffset,gs->spaceship_yoffset,0.75);
 		glRotatef(gs->spaceship_direction,0,0,1);
 		glCallList(spaceships[0]);
+
+//		glPushMatrix();
+//		glEnable(GL_TEXTURE_2D);
+//		glScalef(0.75,0.75,0.75);
+//		glTranslatef(2,2,5.75);
+//		glRotatef(90,0,1,0);
+//		             
+//		   draw_tfv(0,0,0,0,
+//			    0,315,0,
+//			    0,0,0,
+//			    1);
+//		glPopMatrix();
 	     }
 	  }
 	  
@@ -402,7 +418,7 @@ void render_world(game_state_type *gs) {
        glEnd();
 #endif
        glRotatef(90,1,0,0);
-       glCallList(leonard);
+       glCallList(guinea_pigs[LEONARD]);
     }
            
     glPopMatrix();
@@ -668,6 +684,10 @@ int handle_gp_keyboard(int keyspressed, game_state_type *gs, float scale) {
        do_battle(gs);
     }
    
+//    if (keyspressed&ACTION2_PRESSED) {
+//       do_jtowne(gs);  
+//    }
+   
        /* should these go off of new direction or old??? */
     if (keyspressed&UP_PRESSED) {
        gs->pigy=oldpigy+sin( D2R(gs->direction))*scale;
@@ -796,6 +816,7 @@ int handle_gp_keyboard(int keyspressed, game_state_type *gs, float scale) {
           for(j=0;j<3;j++) {
 	     if ((collide[i][j]) && (grid[i][j]>WALKABLE_LIMIT)) { 
 	        collision++;
+		if (grid[i][j]==JOPPATOWNE_TERRAIN) do_jtowne(gs);
 //	     printf("Collision %i %i %.2f %.2f\n",i,j,gs->pigx,gs->pigy);
 	     }
 	  }
@@ -879,11 +900,35 @@ int do_world(game_state_type *gs) {
     check_keyboard(&key_alpha,1);
 
        /* Setup display Lists */
-    leonard=setup_pig_list(0,0);
+
+    guinea_pigs[LEONARD]=setup_pig_list(BROWN_WHITE_BROWN_TEXTURE,
+			   BROWN_TEXTURE,
+			   NOSE_TEXTURE,
+			   BROWN_TEXTURE,
+			   EYE_TEXTURE,
+			   FLESH_TEXTURE,
+			   FLESH_TEXTURE);
+
+    guinea_pigs[OLD_GREY]=setup_pig_list(GREY_TEXTURE,
+			   GREY_TEXTURE,
+			   GREY_NOSE_TEXTURE,
+			   GREY_TEXTURE,
+			   GREY_EYE_TEXTURE,
+			   DARK_SKIN_TEXTURE,
+			   DARK_SKIN_TEXTURE);
+
+     guinea_pigs[SNOWY]=setup_pig_list(WHITE_TEXTURE,
+			   WHITE_TEXTURE,
+			   WHITE_TEXTURE,
+			   WHITE_TEXTURE,
+			   ALBINO_EYE_TEXTURE,
+			   FLESH_TEXTURE,
+      		           FLESH_TEXTURE);
+   
     spaceships[0]=setup_spaceship(0);
     spaceships[1]=setup_spaceship(1);
     setup_enemies();
-    gs->whoami=leonard;
+    gs->whoami=LEONARD;
    
     setup_map();
     setup_terrain();  

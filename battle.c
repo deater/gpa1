@@ -31,8 +31,6 @@
 extern int use_lighting;
 extern int show_fps;
 
-extern GLuint leonard;
-
 #define PI 3.141592653589793238462643383279502884197169399
 
 
@@ -46,6 +44,10 @@ typedef struct {
 } message_type;
 
 
+#define YOU_ATTACK 0
+#define IT_ATTACKS 1
+ 
+
 
     
 
@@ -54,7 +56,7 @@ int do_battle(game_state_type *gs) {
     message_type message;
     message_type damage;
    
-    int opening_pan=1,pan_timer=0;
+    int opening_pan=1,pan_timer=0,game_state=0;
    
     int frames=0,fps_msecs=0,old_fps_msecs=0,keyspressed=0;
     int old_msecs=0,current_msecs=0;
@@ -62,7 +64,7 @@ int do_battle(game_state_type *gs) {
 
     int enemy_attacking=0,enemy_attack_count=0;
    
-    int attacking=0,running=0,defending=0,your_turn=1,run_count=0;
+    int attacking=0,running=0,defending=0,run_count=0;
     int attack_count=0;
    
     float scale=0.0;
@@ -87,6 +89,8 @@ int do_battle(game_state_type *gs) {
     reshape(gs->xsize,gs->ysize);
     check_keyboard(&key_alpha,1);
 
+   
+    game_state=YOU_ATTACK;  /* could be IT_ATTACKS if "back attack" */
 
     old_msecs=SDL_GetTicks();
     pan_timer=old_msecs+5000;
@@ -100,6 +104,7 @@ int do_battle(game_state_type *gs) {
    
    
     glScissor(0,gs->ysize/4,gs->xsize,gs->ysize-(gs->ysize/4));
+    
     while (1) {
        
        frames++;
@@ -123,7 +128,7 @@ int do_battle(game_state_type *gs) {
 	  return 0;
        }
 
-       if (your_turn) {
+       if (game_state==YOU_ATTACK) {
        
 	  if (keyspressed>>16&UP_PRESSED) {
 	     update_bottom_bar=1;
@@ -141,19 +146,19 @@ int do_battle(game_state_type *gs) {
 	     if (position==0) {
 		attacking=1;
 		attack_count=current_msecs+2000;
-		your_turn=0;
+		game_state=IT_ATTACKS;
 	     }
 	     if (position==1) {
 		defending=1;
-		your_turn=0;
+		game_state=IT_ATTACKS;
 	     }
 	     if (position==2) {
-		your_turn=0;
+		game_state=IT_ATTACKS;
 	     }
 	     if (position==3) {
 		running=1;
 		run_count=current_msecs+3000;
-		your_turn=0;
+		game_state=IT_ATTACKS;
 	     }
 	  }
        }
@@ -400,7 +405,7 @@ int do_battle(game_state_type *gs) {
        if (running) {
 	  glRotatef(180,0,1,0);
        }
-       glCallList(leonard);
+       glCallList(guinea_pigs[LEONARD]);
        glPopMatrix();
 
           /* Draw Enemy */
@@ -416,14 +421,21 @@ int do_battle(game_state_type *gs) {
        if (damage.displaying) {
 	  
 	  printf("DAMAGE\n");
+#if 0	  
 	  glColor3f(0,0,0);
 	  glRasterPos3f(damage.x,damage.y,damage.z+3);
-	  vmwGLShadowString(damage.string,font);
+	  texture_put_string(damage.string);
 	  
 	  glColor3f(damage.r,damage.g,damage.b);
 	  glRasterPos3f(damage.x,damage.y,damage.z+3);
 
 	  vmwGLString(damage.string,font);
+#endif
+	  glPushMatrix();
+	  glTranslatef(damage.x,damage.y,damage.z+3);
+	  texture_put_string(damage.string);
+	  glPopMatrix();
+	  
 	  if (current_msecs>damage.timeout) {
 	     damage.displaying=0;
 	  }	  
@@ -432,20 +444,10 @@ int do_battle(game_state_type *gs) {
        
        
        if (message.displaying) {
-          glMatrixMode(GL_PROJECTION);
-          glLoadIdentity();
-          gluOrtho2D(0,320,0,200);
-          glMatrixMode(GL_MODELVIEW);
-          glLoadIdentity();
 
-	  glColor3f(0,0,0);
-	  glRasterPos3f(message.x,message.y,0);
-	  vmwGLShadowString(message.string,font);
+           	  
 	  
-	  glColor3f(message.r,message.g,message.b);
-	  glRasterPos3f(message.x,message.y,0);
-
-	  vmwGLString(message.string,font);
+	  texture_put_string(message.string);
 	  
 	  if (current_msecs>message.timeout) {
 	     message.displaying=0;
@@ -483,7 +485,7 @@ int do_battle(game_state_type *gs) {
           glEnd();
 
 	     /* Attack menu if appropriate */
-          if (your_turn) {
+          if (game_state==YOU_ATTACK) {
              if (gs->anger==9) {
                 putMenuOption(20,30,"SPECIAL",0,position,0);
 	     }

@@ -12,6 +12,8 @@
 
 #include "textures.h"
 
+#include "guinea_pig.h"
+
 #define PI 3.141592653589793238462643383279502884197169399
 
 extern int use_lighting;
@@ -19,6 +21,7 @@ extern int use_textures;
 
 extern GLuint textures[];
 
+GLuint guinea_pigs[NUM_PIGS];
 
 float pig_cylinder[16][2]={
    
@@ -450,47 +453,10 @@ int pig_feet_triangles[6][4]={
 };
   
 
-void draw_guinea_pig(GLuint which_one, float pigx,float pigy,float pigz,
-		     float direction) {
 
-   
-//    glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-   
-    glPushMatrix();
-
-    glTranslatef(pigx,pigy,pigz);
-
-    glRotatef(direction,0.0,0.0,1.0);
-    glRotatef(90,1,0,0);
-
-    glCallList(which_one);
-   
-    glPopMatrix();
-}
-
-    GLfloat red_material[2][4]={
-	 {0.2,0.0,0.0,1.0},  /* Ambient */
-                {0.9,0.1,0.1,1.0}   /* Diffuse */
-    };
-    
-    GLfloat green_material[2][4]={
-	 {0.0,0.2,0.0,1.0},  /* Ambient */
-                {0.1,0.9,0.1,1.0}   /* Diffuse */
-    };
-    
-    GLfloat blue_material[2][4]={
-	 {0.0,0.0,0.2,1.0},  /* Ambient */
-                {0.1,0.1,0.9,1.0}   /* Diffuse */
-    };
-    
-    GLfloat no_mat[]={0.0,0.0,0.0,1.0
-    };
-
-    GLfloat no_shiny[]={0.0
-    };
-
-
-GLuint setup_pig_list(int color, int texture) {
+GLuint setup_pig_list(int body_texture,int back_texture,int nose_texture,
+		      int face_texture,int eye_texture, int feet_texture,
+		      int ear_texture) {
    
     int i,j,k;
     float normalx,normaly,normalz;
@@ -504,7 +470,7 @@ GLuint setup_pig_list(int color, int texture) {
        /* Draw body-tube */
        
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D,textures[BROWN_WHITE_BROWN_TEXTURE]);
+    glBindTexture(GL_TEXTURE_2D,textures[body_texture]);
     glColor3f(0.803,0.5,0.384);
  
     glBegin(GL_TRIANGLES);   
@@ -545,7 +511,7 @@ GLuint setup_pig_list(int color, int texture) {
    
        /* draw hemisphere back */
 //    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D,textures[BROWN_TEXTURE]);
+    glBindTexture(GL_TEXTURE_2D,textures[back_texture]);
     glBegin(GL_QUADS);   
        for(i=0;i<128;i++) {   
 	  
@@ -580,7 +546,7 @@ GLuint setup_pig_list(int color, int texture) {
        /* draw nose */
     /* glColor3f(1.0,1.0,1.0);*/
 //    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D,textures[NOSE_TEXTURE]);
+    glBindTexture(GL_TEXTURE_2D,textures[nose_texture]);
     
     glBegin(GL_QUADS);   
    
@@ -610,10 +576,10 @@ GLuint setup_pig_list(int color, int texture) {
     for(i=0;i<35;i++) {   
        if (pig_face_triangles[i][3]) {
 //   	  glEnable(GL_TEXTURE_2D); 
-	  glBindTexture(GL_TEXTURE_2D,textures[EYE_TEXTURE]);	 
+	  glBindTexture(GL_TEXTURE_2D,textures[eye_texture]);	 
        }
        else {
-	  glBindTexture(GL_TEXTURE_2D,textures[BROWN_TEXTURE]);
+	  glBindTexture(GL_TEXTURE_2D,textures[face_texture]);
        }
        
        glBegin(GL_TRIANGLES);       
@@ -672,7 +638,7 @@ GLuint setup_pig_list(int color, int texture) {
        /* draw feet */
       
     glColor3f(0.75,0.0,0.75);
-    glBindTexture(GL_TEXTURE_2D,textures[FLESH_TEXTURE]);   
+    glBindTexture(GL_TEXTURE_2D,textures[feet_texture]);   
     glBegin(GL_QUADS);   
    
        for(k=0;k<4;k++) {
@@ -708,6 +674,7 @@ GLuint setup_pig_list(int color, int texture) {
     glEnd();
        
        /* draw ears */
+    glBindTexture(GL_TEXTURE_2D,textures[ear_texture]);   
     glBegin(GL_QUADS);
               
        calculate_normal(1.025,0.376399,-0.420208,

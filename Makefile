@@ -15,12 +15,12 @@ L_FLAGS = -L/usr/X11R6/lib -lGL -lGLU -lX11 -lm -lICE -lXmu -lSDL
 
 all:	gp1
 
-gp1:	main.o battle.o gl_helper.o guinea_pig.o keyboard.o main_menu.o matrix_math.o \
-	opener.o setup_enemies.o spaceship.o story.o terrain.o textures.o vmw_glfont.o \
+gp1:	main.o battle.o credits.o gl_helper.o guinea_pig.o joppatowne.o keyboard.o main_menu.o matrix_math.o \
+	opener.o setup_enemies.o spaceship.o story.o terrain.o textures.o tfv.o vmw_glfont.o \
 	vmw_texture.o world.o
-	$(CC) -o gp1 main.o battle.o gl_helper.o guinea_pig.o keyboard.o main_menu.o \
+	$(CC) -o gp1 main.o battle.o credits.o gl_helper.o guinea_pig.o joppatowne.o keyboard.o main_menu.o \
 	           matrix_math.o opener.o setup_enemies.o spaceship.o story.o terrain.o \
-		   textures.o vmw_glfont.o vmw_texture.o world.o \
+		   textures.o tfv.o vmw_glfont.o vmw_texture.o world.o \
 		   $(L_FLAGS)
 
 main.o:	main.c textures.h
@@ -29,11 +29,17 @@ main.o:	main.c textures.h
 battle.o:	battle.c battle.h
 	$(CC) $(C_FLAGS) -c battle.c
 
+credits.o:	credits.c credits.h
+	$(CC) $(C_FLAGS) -c credits.c
+
 gl_helper.o:	gl_helper.c gl_helper.h
 	$(CC) $(C_FLAGS) -c gl_helper.c
 	
 guinea_pig.o:	guinea_pig.c guinea_pig.h
 	$(CC) $(C_FLAGS) -c guinea_pig.c
+
+joppatowne.o:	joppatowne.c joppatowne.h
+	$(CC) $(C_FLAGS) -c joppatowne.c
 
 keyboard.o:	keyboard.c keyboard.h
 	$(CC) $(C_FLAGS) -c keyboard.c
@@ -61,6 +67,9 @@ terrain.o:	terrain.c terrain.h
 
 textures.o:	textures.c textures.h
 	$(CC) $(C_FLAGS) -c textures.c
+
+tfv.o:	tfv.c	tfv.h
+	$(CC) $(C_FLAGS) -c tfv.c
 
 vmw_glfont.o:	vmw_glfont.c vmw_glfont.h
 	$(CC) $(C_FLAGS) -c vmw_glfont.c

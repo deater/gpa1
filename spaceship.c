@@ -124,7 +124,8 @@ GLuint setup_spaceship(int engines_on) {
     else {
        glBindTexture(GL_TEXTURE_2D,textures[SS_NOTHRUST]);
     }
-   
+
+       /* Flame things */
     glBegin(GL_QUADS);
        glNormal3f(-1.0,0.0,0.0);
    
@@ -154,9 +155,93 @@ GLuint setup_spaceship(int engines_on) {
        glVertex3f(-1.5,-1.0,0.75);
 
     glEnd();
-       
+
+
     glBindTexture(GL_TEXTURE_2D,textures[SS_GRAY]);
-    
+       /* triangular thingies on left */    
+    glBegin(GL_QUADS);
+       glNormal3f(0,0,-1);
+       glTexCoord2f(0,0);
+       glVertex3f(-1.5,-0.75,0.5);
+   
+       glTexCoord2f(1,0);
+       glVertex3f(-1.0,-0.75,0.5);
+   
+       glTexCoord2f(1,1);
+       glVertex3f(-1.0,-1.0,0.5);
+   
+       glTexCoord2f(0,1);
+       glVertex3f(-1.5,-1.0,0.5);
+   
+       glNormal3f(0.5547,0,0.83205);
+       glTexCoord2f(0,0);
+       glVertex3f(-1.5,-0.75,0.75);
+   
+       glTexCoord2f(1,0);
+       glVertex3f(-1.0,-0.75,0.5);
+   
+       glTexCoord2f(1,1);
+       glVertex3f(-1.0,-1.0,0.5);
+   
+       glTexCoord2f(0,1);
+       glVertex3f(-1.5,-1.0,0.75);
+   glEnd();
+   
+   glBegin(GL_TRIANGLES);
+      glNormal3f(0,-1,0);
+      glTexCoord2f(0,0);
+      glVertex3f(-1.5,-1.0,0.5);
+   
+      glTexCoord2f(1,0);
+      glVertex3f(-1.0,-1.0,0.5);
+   
+      glTexCoord2f(0,1);
+      glVertex3f(-1.5,-1.0,0.75);
+   
+   glEnd();
+   
+          /* triangular thingies on right */    
+    glBegin(GL_QUADS);
+       glNormal3f(0,0,-1);
+       glTexCoord2f(0,0);
+       glVertex3f(-1.5,0.75,0.5);
+   
+       glTexCoord2f(1,0);
+       glVertex3f(-1.0,0.75,0.5);
+   
+       glTexCoord2f(1,1);
+       glVertex3f(-1.0,1.0,0.5);
+   
+       glTexCoord2f(0,1);
+       glVertex3f(-1.5,1.0,0.5);
+   
+       glNormal3f(0.5547,0,0.83205);
+       glTexCoord2f(0,0);
+       glVertex3f(-1.5,0.75,0.75);
+   
+       glTexCoord2f(1,0);
+       glVertex3f(-1.0,0.75,0.5);
+   
+       glTexCoord2f(1,1);
+       glVertex3f(-1.0,1.0,0.5);
+   
+       glTexCoord2f(0,1);
+       glVertex3f(-1.5,1.0,0.75);
+   glEnd();
+   
+   glBegin(GL_TRIANGLES);
+      glNormal3f(0,1,0);
+      glTexCoord2f(0,0);
+      glVertex3f(-1.5,1.0,0.5);
+   
+      glTexCoord2f(1,0);
+      glVertex3f(-1.0,1.0,0.5);
+   
+      glTexCoord2f(0,1);
+      glVertex3f(-1.5,1.0,0.75);
+   
+   glEnd();
+   
    
     
     glDisable(GL_TEXTURE_2D);

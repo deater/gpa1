@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#define VERSION "0.0.12"
+#define VERSION "0.0.14"
 
 #include "vmw_texture.h"
 #include "vmw_glfont.h"
@@ -23,7 +23,11 @@
 #include "game_state.h"
 #include "world.h"
 
+#include "spaceship.h"
+
 #include "setup_enemies.h"
+
+#include "credits.h"
 
 int use_lighting=1;
 int show_fps=1;
@@ -34,6 +38,13 @@ void parse_config(void) {
 
 void LoadTextures(void) {
 
+#define _BSD_SOURCE 1
+   
+#if (BYTE_ORDER==BIG_ENDIAN)
+    printf("We are big_endian\n");
+    glPixelStorei(GL_UNPACK_SWAP_BYTES,1);
+#endif
+   
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
    
     glGenTextures(TOTAL_TEXTURES,textures);  
@@ -85,11 +96,42 @@ void LoadTextures(void) {
     LoadTexture(64,64,"./textures/arctic_window.amg",ARCTIC_WINDOW_TEXTURE,0,GL_CLAMP);
     LoadTexture(128,64,"./textures/bushes.amg",BUSHES_TEXTURE,1,GL_CLAMP);
     LoadTexture(64,64,"./textures/disintegrate.amg",DISINTEGRATE_TEXTURE,0,GL_CLAMP);
-       
+    LoadTexture(64,64,"./textures/grey_fur.amg",GREY_TEXTURE,0,GL_REPEAT);
+        /* 40 */
+    LoadTexture(64,64,"./textures/grey_nose.amg",GREY_NOSE_TEXTURE,0,GL_CLAMP);
+    LoadTexture(64,64,"./textures/grey_eye.amg",GREY_EYE_TEXTURE,0,GL_CLAMP);
+    LoadTexture(64,64,"./textures/dark_skin.amg",DARK_SKIN_TEXTURE,0,GL_REPEAT);
+    LoadTexture(64,64,"./textures/white.amg",WHITE_TEXTURE,0,GL_REPEAT);
+    LoadTexture(64,64,"./textures/white_nose.amg",WHITE_NOSE_TEXTURE,0,GL_CLAMP);
+        /* 45 */
+    LoadTexture(64,64,"./textures/albino_eye.amg",ALBINO_EYE_TEXTURE,0,GL_CLAMP);
+    LoadTexture(64,64,"./textures/tfv_navy.amg",TFV_NAVY_TEXTURE,0,GL_REPEAT);
+    LoadTexture(64,64,"./textures/tfv_flesh.amg",TFV_FLESH_TEXTURE,0,GL_REPEAT);
+    LoadTexture(64,64,"./textures/tfv_jeans.amg",TFV_JEANS_TEXTURE,0,GL_REPEAT);
+    LoadTexture(64,64,"./textures/tfv_shoe.amg",TFV_SHOE_TEXTURE,0,GL_REPEAT);   
+       /* 50 */
+    LoadTexture(64,64,"./textures/tfv_face.amg",TFV_FACE_TEXTURE,0,GL_CLAMP);      
+    LoadTexture(64,64,"./textures/tfv_hair.amg",TFV_HAIR_TEXTURE,0,GL_CLAMP);   
+    LoadTexture(64,64,"./textures/tfv_l_ear.amg",TFV_LEFT_EAR_TEXTURE,0,GL_CLAMP);   
+    LoadTexture(64,64,"./textures/tfv_r_ear.amg",TFV_RIGHT_EAR_TEXTURE,0,GL_CLAMP);   
+    LoadTexture(64,64,"./textures/tfv_led_sword.amg",TFV_SWORD_TEXTURE,0,GL_REPEAT);   
+       /* 55 */
+    LoadTexture(64,64,"./textures/tfv_led_arrows.amg",TFV_SWORD_ARROWS_TEXTURE,1,GL_CLAMP);   
+    LoadTexture(64,64,"./textures/tfv_face2.amg",TFV_FACE2_TEXTURE,0,GL_CLAMP);   
+    LoadTexture(64,64,"./textures/tfv_hair_black.amg",TFV_HAIR_BLACK_TEXTURE,0,GL_CLAMP);   
+    LoadTexture(64,64,"./textures/tfv_flesh_medium.amg",TFV_FLESH2_TEXTURE,0,GL_CLAMP);   
+    LoadTexture(64,64,"./textures/tfv_light_flannel.amg",TFV_LIGHT_FLANNEL_TEXTURE,0,GL_REPEAT);   
+       /* 60 */
+    LoadTexture(64,64,"./textures/tfv_l_ear2.amg",TFV_LEFT_EAR2_TEXTURE,0,GL_REPEAT);   
+    LoadTexture(64,64,"./textures/tfv_r_ear2.amg",TFV_RIGHT_EAR2_TEXTURE,0,GL_REPEAT);   
+
 }
 
 void init_gl(void) {
    
+#if (BYTE_ORDER==BIG_ENDIAN)
+    glPixelStorei(GL_UNPACK_SWAP_BYTES,1);
+#endif
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
     glClearColor(0.0,0.0,0.0,0.0);
     glClearDepth(1.0);
@@ -165,6 +207,9 @@ int main(int argc, char **argv) {
     else (font_scale=2);
    
     font=vmwLoadFont("./fonts/vmw.fnt",8,16,128,font_scale);
+
+   
+   
    
        /* Initialize SDL */
     if ( SDL_Init(SDL_INIT_VIDEO|SDL_INIT_JOYSTICK)<0) {
@@ -197,6 +242,7 @@ int main(int argc, char **argv) {
    
        /* Setup OpenGL screen */
     init_gl();
+       setup_texture_font("./fonts/vmw.fnt");
     reshape(gs.xsize,gs.ysize);
  
        /* Run the opener */
@@ -208,6 +254,14 @@ int main(int argc, char **argv) {
     if (result==QUIT) {
        SDL_Quit();
     }
+
+    if (result==CREDITS) {
+       do_credits(&gs);
+    }
+   
+    spaceships[0]=setup_spaceship(0);
+    spaceships[1]=setup_spaceship(1);
+   
    
     if (result==VIEW_STORY) {
        do_story(gs.xsize,gs.ysize);
