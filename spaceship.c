@@ -19,6 +19,8 @@ extern int use_textures;
 
 extern GLuint textures[];
 
+GLuint spaceships[2];
+
 GLuint setup_spaceship(int engines_on) {
       
     GLuint display_list;

@@ -306,7 +306,7 @@ void do_story(int width,int height) {
    glLoadIdentity();
    glColor3f(1.0,0.0,0.0);
    glRasterPos3f(5,170,0);
-   vmwGLString("THE MEERSCHWEINCHEN SYSTEM",font,16,32,2);
+   vmwGLString("THE MEERSCHWEINCHEN SYSTEM",font);
        
     glViewport(0,0,(GLsizei)width,(GLsizei)height);
     glMatrixMode(GL_PROJECTION);
@@ -324,7 +324,7 @@ void do_story(int width,int height) {
        glDisable(GL_TEXTURE_2D);
 
        keyspressed=check_keyboard(&alpha,0);
-       if (keyspressed&ESC_PRESSED) {
+       if (keyspressed&MENU_PRESSED) {
           done=1;
        }
        

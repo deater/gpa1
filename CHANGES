@@ -40,3 +40,9 @@
 
 25 July 2001
 + Added preliminary cool opener
+
+28 July 2001
++ Fixed up keyboard handling 
++ Cleaned up the font handling code
++ Enabled getting into/outof spaceship
++ Added command line paramater parsing

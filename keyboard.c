@@ -2,6 +2,21 @@
 
 #include "keyboard.h"
 
+/* MODEL ->  We pretend we essentially have essentially 10 buttons */
+/* Right now this reflects the Gravis-Gamepad I have.  Eventually */
+/* I will add some sort of generic config utility for custom controls */
+
+/* UP, DOWN, LEFT, RIGHT */
+/* 1 (A or ACTION1)
+ * 2 (Z or ACTION2)
+ * 3 (ENTER or CONFIRM)
+ * 4 (SPACE or CANCEL)
+ * 5 (J or PAN_LEFT)
+ * 6 (K or PAN_RIGHT)
+ * 9 (P or PAUSE)
+ *10 (ESCAPE or MENU)
+*/
+
 
 int check_keyboard(char *alphanum,int reset) {
    
@@ -21,8 +36,9 @@ int check_keyboard(char *alphanum,int reset) {
     }
         
     while ( SDL_PollEvent(&event) ) {
+       
        if ( event.type == SDL_QUIT ) {
-          keys_down|=ESC_PRESSED;
+          keys_down|=MENU_PRESSED;
 	  return 1;
        }
 
@@ -33,9 +49,29 @@ int check_keyboard(char *alphanum,int reset) {
        if (event.type == SDL_JOYBUTTONDOWN) {
 	  button=event.jbutton.button;
 	  switch(button) {
-	     case 0: keys_down|=A_PRESSED;
+	     case 0: momentary|=ACTION1_PRESSED;
+	             keys_down|=ACTION1_PRESSED;
 	             break;
-	     case 1: keys_down|=Z_PRESSED;
+	     case 1: momentary|=ACTION2_PRESSED;
+	             keys_down|=ACTION2_PRESSED;
+	             break;
+	     case 2: momentary|=CONFIRM_PRESSED;
+	             keys_down|=CONFIRM_PRESSED;
+	             break;
+	     case 3: momentary|=CANCEL_PRESSED;
+	             keys_down|=CANCEL_PRESSED;
+	             break;
+	     case 4: momentary|=PAN_LEFT_PRESSED;
+	             keys_down|=PAN_LEFT_PRESSED;
+	             break;
+	     case 5: momentary|=PAN_RIGHT_PRESSED;
+	             keys_down|=PAN_RIGHT_PRESSED;
+	             break;
+	     case 8: momentary|=PAUSE_PRESSED;
+	             keys_down|=PAUSE_PRESSED;
+	             break;
+	     case 9: momentary|=MENU_PRESSED;
+	             keys_down|=MENU_PRESSED;
 	             break;
 	  }
 	  //printf("Button: %i\n",button);
@@ -81,9 +117,21 @@ int check_keyboard(char *alphanum,int reset) {
        if (event.type == SDL_JOYBUTTONUP) {
 	  button=event.jbutton.button;
 	  switch(button) {
-	     case 0: keys_down&=(~A_PRESSED);
+	     case 0: keys_down&=(~ACTION1_PRESSED);
 	             break;
-	     case 1: keys_down&=(~Z_PRESSED);
+	     case 1: keys_down&=(~ACTION2_PRESSED);
+	             break;
+	     case 2: keys_down&=(~CONFIRM_PRESSED);
+	             break;
+	     case 3: keys_down&=(~CANCEL_PRESSED);
+	             break;
+	     case 4: keys_down&=(~PAN_LEFT_PRESSED);
+	             break;
+	     case 5: keys_down&=(~PAN_RIGHT_PRESSED);
+	             break;
+	     case 8: keys_down&=(~PAUSE_PRESSED);
+	             break;
+	    case  9: keys_down&=(~MENU_PRESSED);
 	             break;
 	  }
 	  //printf("Button: %i\n",button);
@@ -101,10 +149,18 @@ int check_keyboard(char *alphanum,int reset) {
 	                    break;
 	     case SDLK_LEFT: keys_down&=(~LEFT_PRESSED);
 	                    break;
-	   case SDLK_ESCAPE: keys_down&=(~ESC_PRESSED); break;
+	     case SDLK_ESCAPE: keys_down&=(~MENU_PRESSED); 
+	                    break;
+	     case SDLK_RETURN:  keys_down&=(~CONFIRM_PRESSED);
+	      		    break;
+	     case SDLK_SPACE: keys_down&=(~CANCEL_PRESSED);
+	                    break;
 	     
-	   case 'a': case 'A': keys_down&=(~A_PRESSED); break;
-	   case 'z': case 'Z': keys_down&=(~Z_PRESSED); break;
+	   case 'a': case 'A': keys_down&=(~ACTION1_PRESSED); break;
+	   case 'z': case 'Z': keys_down&=(~ACTION2_PRESSED); break;
+	   case 'j': case 'J': keys_down&=(~PAN_LEFT_PRESSED); break;
+	   case 'k': case 'K': keys_down&=(~PAN_RIGHT_PRESSED); break;
+	   case 'p': case 'P': keys_down&=(~PAUSE_PRESSED); break;
 	  }
        }
        
@@ -112,39 +168,39 @@ int check_keyboard(char *alphanum,int reset) {
 	  keypressed=event.key.keysym.sym;
 	   
 	  switch (keypressed) {
-	   case 'L':
-	   case 'l': *alphanum='l'; break;
-	     
-
-	   case 'k': case 'K':
-	             *alphanum='k';
-	             break;
-	   case 'j': case 'J':
-	             *alphanum='j';
-	             break;
-	   case 'm': case 'M':
-	             *alphanum='m';
-	             break;
-	   case 'i': case 'I':
-	             *alphanum='i';
-	             break;
-
-	   case 'P': case 'p':
-	             *alphanum='p';
-	             break;
-	     
+	      
 	   case 'a': case 'A':
-	                     momentary|=A_PRESSED;
-	                     keys_down|=A_PRESSED;
+	                     momentary|=ACTION1_PRESSED;
+	                     keys_down|=ACTION1_PRESSED;
 	                     break;
 	     
 	   case 'z': case 'Z':
-	                     momentary|=Z_PRESSED;
-	                     keys_down|=Z_PRESSED;
+	                     momentary|=ACTION2_PRESSED;
+	                     keys_down|=ACTION2_PRESSED;
 	                     break;  
 	     
-	   case SDLK_ESCAPE: keys_down|=ESC_PRESSED; 
+	   case SDLK_RETURN: momentary|=CONFIRM_PRESSED;
+	                     keys_down|=CONFIRM_PRESSED;
 	                     break;
+	   case SDLK_SPACE:  momentary|=CANCEL_PRESSED;
+	                     keys_down|=CANCEL_PRESSED;
+	                     break;
+	   case 'j': case 'J':
+	                     momentary|=PAN_LEFT_PRESSED;
+	                     keys_down|=PAN_LEFT_PRESSED;
+	                     break;
+	   case 'k': case 'K':
+	                     momentary|=PAN_RIGHT_PRESSED;
+	                     keys_down|=PAN_RIGHT_PRESSED;
+	                     break;
+	   case 'p': case 'P':
+	                     momentary|=PAUSE_PRESSED;
+	                     keys_down|=PAUSE_PRESSED;
+	                     break;
+	   case SDLK_ESCAPE: momentary|=MENU_PRESSED;
+	                     keys_down|=MENU_PRESSED; 
+	                     break;
+	   
 	   case SDLK_RIGHT:  momentary|=RIGHT_PRESSED;
                              keys_down|=RIGHT_PRESSED;	                     
                              break;
@@ -158,6 +214,8 @@ int check_keyboard(char *alphanum,int reset) {
 	   case SDLK_DOWN:   momentary|=DOWN_PRESSED;
 	                     keys_down|=DOWN_PRESSED;
                              break;
+	     
+	   default:  *alphanum=keypressed; break;
 	  }
        }
     }

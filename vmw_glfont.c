@@ -14,6 +14,7 @@ GLubyte *font;
 
 GLubyte high,low;
 
+static int font_scale,font_xsize,font_ysize;
 
 void double_size(GLubyte value) {
    
@@ -42,7 +43,11 @@ GLubyte *vmwLoadFont(char *namest,int xsize,int ysize,int numchars,int scale)
     FILE *f;
     int i,fonty,numloop;
     GLubyte *data;
-    
+
+    font_scale=scale;
+    font_xsize=xsize*scale;
+    font_ysize=ysize*scale;
+   
     if ((scale<1) || (scale>2)) printf("Unsupported scale factor %i\n",scale);
    
     data=(GLubyte *)calloc(numchars*ysize*scale*scale,(sizeof(GLubyte)));
@@ -78,13 +83,14 @@ GLubyte *vmwLoadFont(char *namest,int xsize,int ysize,int numchars,int scale)
 }
 
 
-void vmwGLString(char *st,GLubyte *font,int xsize,int ysize,int scale) {
+void vmwGLString(char *st,GLubyte *font,int xsize,int ysize) {
    
    int i,len;
    
    len=strlen(st);
    for(i=0;i<len;i++) {
-      glBitmap(xsize,ysize,0.0,0.0,xsize+1,0.0,font+(st[i]*ysize*scale));
+      glBitmap(font_xsize,font_ysize,0.0,0.0,
+	       font_xsize+1,0.0,font+(st[i]*font_ysize*font_scale));
    }
 }
 

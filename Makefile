@@ -1,14 +1,17 @@
 CC = gcc
 C_FLAGS = -Wall -O2
-L_FLAGS = -L/usr/X11R6/lib -lGL -lGLU  -lX11 -lm -lICE -lXmu -lSDL
+L_FLAGS = -L/usr/X11R6/lib -lGL -lGLU  -lX11 -lm -lICE -lXmu -lSDL 
 
 
 all:	gp1
 
-gp1:	main.o gl_helper.o guinea_pig.o keyboard.o matrix_math.o opener.o \
-	spaceship.o story.o terrain.o textures.o vmw_glfont.o vmw_texture.o
-	$(CC) -o gp1 main.o gl_helper.o guinea_pig.o keyboard.o matrix_math.o \
-	opener.o spaceship.o story.o terrain.o textures.o vmw_glfont.o vmw_texture.o $(L_FLAGS)
+gp1:	main.o gl_helper.o guinea_pig.o keyboard.o main_menu.o matrix_math.o \
+	opener.o spaceship.o story.o terrain.o textures.o vmw_glfont.o \
+	vmw_texture.o world.o
+	$(CC) -o gp1 main.o gl_helper.o guinea_pig.o keyboard.o main_menu.o \
+	           matrix_math.o opener.o spaceship.o story.o terrain.o \
+		   textures.o vmw_glfont.o vmw_texture.o world.o \
+		   $(L_FLAGS)
 
 main.o:	main.c textures.h
 	$(CC) $(C_FLAGS) -c main.c
@@ -21,6 +24,9 @@ guinea_pig.o:	guinea_pig.c guinea_pig.h
 
 keyboard.o:	keyboard.c keyboard.h
 	$(CC) $(C_FLAGS) -c keyboard.c
+
+main_menu.o:	main_menu.c main_menu.h
+	$(CC) $(C_FLAGS) -c main_menu.c
 
 matrix_math.o:	matrix_math.c matrix_math.h
 	$(CC) $(C_FLAGS) -c matrix_math.c
@@ -45,6 +51,9 @@ vmw_glfont.o:	vmw_glfont.c vmw_glfont.h
 
 vmw_texture.o:	vmw_texture.c vmw_texture.h
 	$(CC) $(C_FLAGS) -c vmw_texture.c
+
+world.o:	world.c
+	$(CC) $(C_FLAGS) -c world.c
 
 clean:
 	rm -rf core gp1 *.o *~

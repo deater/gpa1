@@ -10,11 +10,42 @@ A rpg adventure game written as an exercise in learning OpenGL.
 
 Instructions
 ~~~~~~~~~~~~
-Use arrows/joystick to move.
-'A' and 'Z' change altitude
-'I' 'J' 'K' 'M' change camera angle
-'L' toggles lighting effects
+
+  Main Controls
+  
+     Command     Keyboard     Joystick
+     ----------------------------------
+     UP            UP           UP
+     DOWN          DOWN         DOWN
+     LEFT          LEFT         LEFT
+     RIGHT         RIGHT        RIGHT
+     ACTION1       A            Button 1
+     ACTION2       Z            Button 2
+     CONFIRM       Enter        Button 3
+     CANCEL        Space        Button 4
+     PAN LEFT      J            Button 5
+     PAN RIGHT     K            Button 6
+     PAUSE         P            Button 9
+     MENU(QUIT)    Escape       Button 10
+  
+When in "Guinea Pig" Mode
+   Directional         moves
+   CONFIRM             Enter spaceship (if near enough)
+   
+When in "Space Ship" Mode
+   UP/DOWN:            changes altitude
+   RIGHT/LEFT:         steers
+   ACTION1/ACTION2:    Forward/Reverse
+   CONFIRM             Exit spaceship (if over grasslands)
+
+Other buttons:
+  'I','M' change camera height
+  'L' toggles lighting effects
 
 Command Line Options
 ~~~~~~~~~~~~~~~~~~~~
 --halfsize   runs in 320x200 mode
+
+
+Vince Weaver
+vince@deater.net

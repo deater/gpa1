@@ -1,1 +1,1 @@
-void opener();
+void opener(int xsize, int ysize);
