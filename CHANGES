@@ -24,3 +24,7 @@
 + Made more terrain
 + Fixed the world-drawing code
 + Started implementing final map
+
+22 July 2001
++ Much better keyboard control
++ Added joystick support

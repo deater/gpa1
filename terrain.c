@@ -150,6 +150,7 @@ void setup_map(void) {
     init_vline(20,22,1,CLIFF_TERRAIN,0,NEW_ANDES);
     init_vline(26,27,3,CLIFF_TERRAIN,0,NEW_ANDES);
     init_point(7,33,CLIFF_TERRAIN,0,ARCTIC_BASE_AREA);
+    init_point(6,30,CLIFF_TERRAIN,0,NEW_ANDES);
    
     init_vline(20,21,8,CLIFF_TERRAIN,180,SCHWARZENWALD);
     init_vline(23,24,9,CLIFF_TERRAIN,180,SCHWARZENWALD);

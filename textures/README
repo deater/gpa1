@@ -1,0 +1,45 @@
+BACKGROUND
+~~~~~~~~~~
+
+These texture files were all created by me, Vince Weaver, using The Gimp.
+
+They are stored in my own custom "Paintpro" file format.  This file format
+is unrelated to the commercial "PaintPro" program and is similar to the 
+.pcx file format.  [For more info on my PaintPro format see 
+http://www.deater.net/weave/vmwprod/paintpro.html]
+
+Traditionally the extension for paintpro files is .ppp ["paint pro packed"] or
+.pro.   Sometimes I just use the extension for the program the files belong
+to [.tb1 for Tom Bombem images].
+
+When I first invented the format I often used the ".amg" extension.
+Officially this stands for the "AMazing Graphics" format, but in reality they
+are the initials of a girl I liked at the time.  Still, .amg is a much
+prettier extension than .ppp so I kept it for this project.
+
+
+CREATING
+~~~~~~~~
+
+The included "paintpro.c" file is a plug-in for The Gimp 1.2.x
+[http://www.gimp.org] to load and save files in this format.
+
+To compile you need to download the Gimp 1.2.x sourcecode.  configure and
+compile it as you normally would.  Then copy the paintpro.c file included
+here into the root gimp source-code directory.  Change into the directory, and
+do a "gimptool --build paintpro.c"  .  This should create a file called 
+"paintpro" .  Copy this plugin to somewhere gimp will find it, such as
+~/.gimp-1.2/plug-ins/
+
+Now start up the gimp, and you should be able to load and save paintpro files.
+
+Some notes:
+
+   Theoretical Maximum resolution:   2048x2048x2048 colors
+   Practical Maximum Use (tested):   1024x 768x 256 colors
+   
+When saving and loading you can just go by extension.  If you are choosing
+file type it should either appear as PPP or AMG in the menu.
+
+Before saving, make sure you "flatten" the image, and then convert it to 
+"indexed" mode, otherwise you will get errors.
