@@ -3,6 +3,7 @@
 #include <GL/glu.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h> /* usleep() */
 #include <math.h>
 
 #include "vmw_texture.h"
@@ -51,6 +52,88 @@ int turn_right=0,turn_left=0,draw_splash=0,accelerating=0;
 
 
 map_element world_map[40][40];
+
+
+
+int in_game_menu(game_state_type *gs) {
+
+    int result,position=0;
+    char alpha,tempstring[25];
+   
+    glDisable(GL_LIGHTING);
+    glViewport(0,0,gs->xsize,gs->ysize);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0,320,0,200);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    result=check_keyboard(&alpha,1);
+   
+    while (1) {
+       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+       glColor3f(1.0,1.0,0.0);
+       
+       glBegin(GL_LINES);
+          glVertex3f(95,0,0);
+          glVertex3f(95,200,0);
+         
+       glEnd();
+       
+       glRasterPos3f(100,180,0);
+       vmwGLString("LOCATION: ",font);
+       glRasterPos3f(120,170,0);
+       vmwGLString(world_map[gs->gridx][gs->gridy].region_name,font);
+       glRasterPos3f(100,160,0);
+       vmwGLString("HEALTH:",font);
+       
+       sprintf(tempstring,"%d/%d",gs->health,gs->health_total);
+       
+       glRasterPos3f(120,150,0);
+       vmwGLString(tempstring,font);
+       
+       glRasterPos3f(100,140,0);
+       vmwGLString("MONEY:",font);
+       glRasterPos3f(120,130,0);
+       sprintf(tempstring,"$%d",gs->money);
+       vmwGLString(tempstring,font);
+       
+       putMenuOption(20,180,"CONTINUE",0,position);
+       putMenuOption(20,170,"SAVE",1,position);
+       putMenuOption(20,120,"QUIT",2,position);
+
+       glFlush();
+       SDL_GL_SwapBuffers();
+       
+       usleep(100);
+       result=check_keyboard(&alpha,0);
+   
+       if ( (result>>16)&MENU_PRESSED) {
+	  reshape(gs->xsize,gs->ysize);
+	  check_keyboard(&alpha,1);
+	  return CANCELED;
+       }
+       
+       if ( (result>>16)&UP_PRESSED) {
+	  position--;
+	  if (position<0) position=0;
+       }
+       if ( (result>>16)&DOWN_PRESSED) {
+	  position++;
+	  if (position>2) position=2;
+       }
+       if ( (result>>16)&CONFIRM_PRESSED) {
+	  reshape(gs->xsize,gs->ysize);
+	  switch(position) {
+	   case 0: return CANCELED;
+	   case 1: return SAVE_GAME;
+	   case 2: return QUIT;
+	  }
+       }
+       
+    }
+    return NEW_GAME;
+}
+
 
 
 void render_world(game_state_type *gs) {
@@ -540,18 +623,18 @@ int handle_gp_keyboard(int keyspressed, game_state_type *gs, float scale) {
 
 
           if (keyspressed&RIGHT_PRESSED) {
-	     gs->direction-=10;
+	     gs->direction-=10*scale;
           }
           if (keyspressed&LEFT_PRESSED) {
-             gs->direction+=10;    
+             gs->direction+=10*scale;    
           }
           if (keyspressed&UP_PRESSED) {
-             gs->pigy+=sin( (gs->direction*PI)/180.0);
-             gs->pigx+=cos( (gs->direction*PI)/180.0);
+             gs->pigy+=sin( (gs->direction*PI)/180.0)*scale;
+             gs->pigx+=cos( (gs->direction*PI)/180.0)*scale;
           }
           if (keyspressed&DOWN_PRESSED) {
-             gs->pigy-=sin( (gs->direction*PI)/180.0);
-             gs->pigx-=cos( (gs->direction*PI)/180.0);       
+             gs->pigy-=sin( (gs->direction*PI)/180.0)*scale;
+             gs->pigx-=cos( (gs->direction*PI)/180.0)*scale;       
           }
              /* should monitor x_offset,y_offset too */
           if ( (keyspressed>>16)&CONFIRM_PRESSED) {
@@ -603,7 +686,7 @@ int handle_gp_keyboard(int keyspressed, game_state_type *gs, float scale) {
        
        
 
-int do_world(int xsize,int ysize,game_state_type *gs) {
+int do_world(game_state_type *gs) {
 
    
     int frames=0,fps_msecs=0,old_fps_msecs=0,keyspressed=0;
@@ -611,10 +694,11 @@ int do_world(int xsize,int ysize,game_state_type *gs) {
    
     float scale=0.0;
 
+    int result;
     char key_alpha;
    
        /* Init screen and keyboard */
-    reshape(xsize,ysize);
+    reshape(gs->xsize,gs->ysize);
     check_keyboard(&key_alpha,1);
 
        /* Setup display Lists */
@@ -671,7 +755,8 @@ int do_world(int xsize,int ysize,game_state_type *gs) {
        }
 
        if (keyspressed&MENU_PRESSED) {
-	  return -1;
+	  result=in_game_menu(gs);
+	  if (result==QUIT) return -1;
        }
    
        if (gs->in_spaceship) handle_ss_keyboard(keyspressed,gs,scale);

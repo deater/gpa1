@@ -27,9 +27,12 @@
 #define SPLASH_TEXTURE		 26
 #define WORLD_MAP_TEXTURE        27
 #define MOON_MAP_TEXTURE         28
-#define SUN_TEXTURE              29
-#define STAR_TEXTURE             30
-#define TOTAL_TEXTURES 31
+#define SUN_TEXTURE              30
+#define TILE_ROOF_TEXTURE        31
+#define TILE_DOOR_TEXTURE        32
+#define TILE_WINDOW_TEXTURE      33
+#define TILE_BLANK_TEXTURE       34
+#define TOTAL_TEXTURES 35
 
 extern GLuint textures[];
 

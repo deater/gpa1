@@ -46,3 +46,6 @@
 + Cleaned up the font handling code
 + Enabled getting into/outof spaceship
 + Added command line paramater parsing
+
+29 July 2001
++ Added in-game menu

@@ -74,7 +74,11 @@ void LoadTextures(void) {
     LoadTexture(64,64,"./textures/moon_map.amg",MOON_MAP_TEXTURE,0,GL_CLAMP);
     LoadTexture(64,64,"./textures/sun.amg",SUN_TEXTURE,0,GL_CLAMP);
         /* 30 */
-    LoadTexture(64,64,"./textures/stars.amg",STAR_TEXTURE,0,GL_REPEAT);
+    LoadTexture(64,64,"./textures/tile_roof.amg",TILE_ROOF_TEXTURE,0,GL_CLAMP);
+    LoadTexture(64,64,"./textures/tile_door.amg",TILE_DOOR_TEXTURE,0,GL_CLAMP);
+    LoadTexture(64,64,"./textures/tile_window.amg",TILE_WINDOW_TEXTURE,0,GL_REPEAT);
+    LoadTexture(64,64,"./textures/tile_blank.amg",TILE_BLANK_TEXTURE,0,GL_CLAMP);
+   
 }
 
 void init_gl(void) {
@@ -103,19 +107,12 @@ int main(int argc, char **argv) {
 
     int result,font_scale,i,mode;
     int print_help=0,print_version=0,fullscreen=0;
+
    
-    int xsize=640,ysize=480;
+    game_state_type gs;
 
- 
-    game_state_type gs={
-       0,0,0,-0.5,
-       5,13,
-       1,1,
-       1,
-       4,13,
-       0,0,0
-    };
-
+    gs.xsize=640; gs.ysize=480;
+   
     for(i=1;i<argc;i++) {
        switch(argv[i][1]) {
 	case 'h': print_help=1;
@@ -124,9 +121,9 @@ int main(int argc, char **argv) {
 	          break;
 	case 'f': fullscreen=1;
 	          break;
-	case 't': xsize=320; ysize=200;
+	case 't': gs.xsize=320; gs.ysize=200;
 	          break;
-	case 'l': xsize=1024; ysize=768;
+	case 'l': gs.xsize=1024; gs.ysize=768;
 	          break;
 	default: printf("\nUnknown option %s\n",argv[i]);
 	         print_help=1;
@@ -156,7 +153,7 @@ int main(int argc, char **argv) {
     parse_config();   
    
        /* Make sure the font is loaded and the proper size */
-    font_scale=(xsize/320);
+    font_scale=(gs.xsize/320);
     if (font_scale<=1) font_scale=1;
     else (font_scale=2);
    
@@ -172,7 +169,7 @@ int main(int argc, char **argv) {
     else mode=SDL_OPENGL;
    
        /* Create the OpenGL screen */
-    if ( SDL_SetVideoMode(xsize, ysize, 0, mode) == NULL ) {
+    if ( SDL_SetVideoMode(gs.xsize, gs.ysize, 0, mode) == NULL ) {
        printf("Unable to create OpenGL screen: %s\n", SDL_GetError());
        SDL_Quit();
        return -2;
@@ -194,25 +191,37 @@ int main(int argc, char **argv) {
    
        /* Setup OpenGL screen */
     init_gl();
-    reshape(xsize,ysize);
+    reshape(gs.xsize,gs.ysize);
  
        /* Run the opener */
-    opener(xsize,ysize);
+    opener(gs.xsize,gs.ysize);
    
        /* Run the main menu */
-    result=main_menu(xsize,ysize);
+    result=main_menu(gs.xsize,gs.ysize);
     
     if (result==QUIT) {
        SDL_Quit();
     }
    
     if (result==VIEW_STORY) {
-       do_story(xsize,ysize);
+       do_story(gs.xsize,gs.ysize);
     }
-    
+
+       /* init game state */
+    gs.health=100;
+    gs.health_total=100;
+    gs.money=100;
+    gs.direction=0;
+    gs.pigx=0; gs.pigy=0; gs.pigz=-0.5;
+    gs.gridx=5; gs.gridy=13;
+    gs.spaceship_active=1; gs.in_spaceship=0;
+    gs.whoami=1;
+    gs.spaceship_gridx=4;  gs.spaceship_gridy=13;
+    gs.spaceship_xoffset=0; gs.spaceship_yoffset=0; gs.spaceship_direction=0;
+      
        /* Start off at the world map */
-    reshape(xsize,ysize);
-    do_world(xsize,ysize,&gs);
+    reshape(gs.xsize,gs.ysize);
+    do_world(&gs);
        
        /* Quit */
     SDL_Quit();

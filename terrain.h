@@ -1,4 +1,4 @@
-#define NUM_TERRAINS      10
+#define NUM_TERRAINS      11
 
 #define GRASS_TERRAIN     0
 #define MOUNTAIN_TERRAIN  1
@@ -10,6 +10,7 @@
 #define TUNDRA_TERRAIN      7
 #define CLIFF_TERRAIN       8
 #define CLIFFCORNER_TERRAIN 9
+#define OCEAN_CITY_TERRAIN 10
 
 typedef struct map_element {
       int terrain_type;

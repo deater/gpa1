@@ -49,6 +49,7 @@ float terrain_heights[NUM_TERRAINS]={
    0.0,  /*#define TUNDRA_TERRAIN      */
    0.0,  /*#define CLIFF_TERRAIN       */
    0.0,  /*#define CLIFFCORNER_TERRAIN */
+   3.0   /*#define OCEAN_CITY_TERRAIN */
 };
 
 void init_hline(x1,x2,y, terrain, rotation, region) {
@@ -212,6 +213,11 @@ void setup_map(void) {
     init_point(9,16,BEACHEND_TERRAIN,0,SOUTHERN_PAMPAS);
    
     init_point(9,14,BEACHEND_TERRAIN,90,SOUTHERN_PAMPAS);
+
+       /* Towns */
+    init_point(5,18,OCEAN_CITY_TERRAIN,0,JOPPATOWNE_AREA);
+    init_point(8,26,OCEAN_CITY_TERRAIN,90,OCEAN_CITY_AREA);
+    init_point(10,33,OCEAN_CITY_TERRAIN,0,ARCTIC_BASE_AREA);
    
 }
 
@@ -245,6 +251,336 @@ void setup_terrain(void) {
       glTexCoord2f(0.0,1.0);
       glVertex3f(-2.0,2.0,0.0);
    glEnd();
+   glDisable(GL_TEXTURE_2D);
+   
+   glEndList();
+   
+          /* Ocean City */
+   terrain[OCEAN_CITY_TERRAIN]=glGenLists(1);
+   glNewList(terrain[OCEAN_CITY_TERRAIN],GL_COMPILE);
+   
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D,textures[GRASS_TEXTURE]);
+   
+   glBegin(GL_QUADS);
+      glNormal3f(0.0,0.0,1.0);
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(-2.0,-2.0,0.0);
+   
+      glTexCoord2f(1.0,0.0);
+      glVertex3f(2.0,-2.0,0.0);
+   
+      glTexCoord2f(1.0,1.0);
+      glVertex3f(2.0,2.0,0.0);
+   
+      glTexCoord2f(0.0,1.0);
+      glVertex3f(-2.0,2.0,0.0);
+   glEnd();
+   
+   glBindTexture(GL_TEXTURE_2D,textures[TILE_DOOR_TEXTURE]);
+   glBegin(GL_QUADS);
+      glNormal3f(0.0,-1.0,0.0);
+      glTexCoord2f(1.0,1.0);
+      glVertex3f(-2,-1,0);
+   
+      glTexCoord2f(0.0,1.0);
+      glVertex3f(-1,-1,0);
+   
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(-1,-1,1);
+   
+      glTexCoord2f(1.0,0.0);
+      glVertex3f(-2,-1,1);
+   
+          /* */
+   
+      glTexCoord2f(1.0,1.0);
+      glVertex3f(1,-1,0);
+   
+      glTexCoord2f(0.0,1.0);
+      glVertex3f(2,-1,0);
+   
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(2,-1,1);
+   
+      glTexCoord2f(1.0,0.0);
+      glVertex3f(1,-1,1);
+  
+   glEnd();
+   
+   glBindTexture(GL_TEXTURE_2D,textures[TILE_WINDOW_TEXTURE]);
+   glBegin(GL_QUADS);
+      glNormal3f(0.0,-1.0,0.0);
+      glTexCoord2f(1.0,2.0);
+      glVertex3f(-1,-1,0);
+   
+      glTexCoord2f(0.0,2.0);
+      glVertex3f(0,-1,0);
+   
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(0,-1,2);
+   
+      glTexCoord2f(1.0,0.0);
+      glVertex3f(-1,-1,2);
+       /* back */
+      glNormal3f(0.0,1.0,0.0);
+      glTexCoord2f(1.0,1.0);
+      glVertex3f(-1,1,0);
+   
+      glTexCoord2f(0.0,1.0);
+      glVertex3f(-2,1,0);
+   
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(-2,1,1);
+   
+      glTexCoord2f(1.0,0.0);
+      glVertex3f(-1,1,1);   
+          /* back2 */
+      glNormal3f(0.0,1.0,0.0);
+      glTexCoord2f(1.0,2.0);
+      glVertex3f(0,1,0);
+   
+      glTexCoord2f(0.0,2.0);
+      glVertex3f(-1,1,0);
+   
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(-1,1,2);
+   
+      glTexCoord2f(1.0,0.0);
+      glVertex3f(0,1,2);   
+          /* back3*/
+      glNormal3f(0.0,1.0,0.0);
+      glTexCoord2f(1.0,1.0);
+      glVertex3f(2,1,0);
+   
+      glTexCoord2f(0.0,1.0);
+      glVertex3f(1,1,0);
+   
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(1,1,1);
+   
+      glTexCoord2f(1.0,0.0);
+      glVertex3f(2,1,1);   
+   
+          /* side1 */
+      glNormal3f(-1.0,0.0,0.0);
+      glTexCoord2f(2.0,1.0);
+      glVertex3f(-2,1,0);
+   
+      glTexCoord2f(0.0,1.0);
+      glVertex3f(-2,-1,0);
+   
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(-2,-1,1);
+   
+      glTexCoord2f(2.0,0.0);
+      glVertex3f(-2,1,1);   
+   
+             /* side2 */
+      glNormal3f(-1.0,0.0,0.0);
+      glTexCoord2f(2.0,1.0);
+      glVertex3f(-1,1,1);
+   
+      glTexCoord2f(0.0,1.0);
+      glVertex3f(-1,-1,1);
+   
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(-1,-1,2);
+   
+      glTexCoord2f(2.0,0.0);
+      glVertex3f(-1,1,2);   
+   
+             /* side3 */
+      glNormal3f(-1.0,0.0,0.0);
+      glTexCoord2f(2.0,1.0);
+      glVertex3f(1,1,0);
+   
+      glTexCoord2f(0.0,1.0);
+      glVertex3f(1,-1,0);
+   
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(1,-1,1);
+   
+      glTexCoord2f(2.0,0.0);
+      glVertex3f(1,1,1);   
+   
+             /* -side1 */
+      glNormal3f(1.0,0.0,0.0);
+      glTexCoord2f(2.0,2.0);
+      glVertex3f(0,1,0);
+   
+      glTexCoord2f(0.0,2.0);
+      glVertex3f(0,-1,0);
+   
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(0,-1,2);
+   
+      glTexCoord2f(2.0,0.0);
+      glVertex3f(0,1,2);   
+   
+                /* -side2 */
+      glNormal3f(1.0,0.0,0.0);
+      glTexCoord2f(2.0,1.0);
+      glVertex3f(2,1,0);
+   
+      glTexCoord2f(0.0,1.0);
+      glVertex3f(2,-1,0);
+   
+      glTexCoord2f(0.0,0.0);
+      glVertex3f(2,-1,1);
+   
+      glTexCoord2f(2.0,0.0);
+      glVertex3f(2,1,1);   
+   
+   glEnd();
+   glBindTexture(GL_TEXTURE_2D,textures[TILE_BLANK_TEXTURE]);  
+   glBegin(GL_TRIANGLES);
+   
+          /* tri 1 */
+      glNormal3f(-1.0,0,0);
+      glTexCoord2f(0,0);
+      glVertex3f(-2,1,1);
+   
+      glTexCoord2f(1,0);
+      glVertex3f(-2,-1,1);
+   
+      glTexCoord2f(0.5,1);
+      glVertex3f(-2,0,1.5);
+
+          /* tri 2 */
+      glNormal3f(-1.0,0,0);
+      glTexCoord2f(0,0);
+      glVertex3f(-1,1,2);
+   
+      glTexCoord2f(1,0);
+      glVertex3f(-1,-1,2);
+   
+      glTexCoord2f(0.5,1);
+      glVertex3f(-1,0,2.5);
+   
+       /* tri 3 */
+      glNormal3f(1.0,0,0);
+      glTexCoord2f(0,0);
+      glVertex3f(0,1,2);
+   
+      glTexCoord2f(1,0);
+      glVertex3f(0,-1,2);
+   
+      glTexCoord2f(0.5,1);
+      glVertex3f(0,0,2.5);
+   
+          /* tri 4 */
+      glNormal3f(-1.0,0,0);
+      glTexCoord2f(0,0);
+      glVertex3f(1,1,1);
+   
+      glTexCoord2f(1,0);
+      glVertex3f(1,-1,1);
+   
+      glTexCoord2f(0.5,1);
+      glVertex3f(1,0,1.5);
+     
+          /* tri 5 */
+      glNormal3f(1.0,0,0);
+      glTexCoord2f(0,0);
+      glVertex3f(2,1,1);
+   
+      glTexCoord2f(1,0);
+      glVertex3f(2,-1,1);
+   
+      glTexCoord2f(0.5,1);
+      glVertex3f(2,0,1.5);
+   
+   glEnd();
+   glBindTexture(GL_TEXTURE_2D,textures[TILE_ROOF_TEXTURE]);    
+   glBegin(GL_QUADS);
+   
+        /* roof front 1 */
+      glNormal3f(0.0,-0.447,0.89442);
+      glTexCoord2f(0,0);
+      glVertex3f(-2.1,-1.2,0.9);       
+   
+      glTexCoord2f(1,0);
+      glVertex3f(-1,-1.2,0.9);       
+   
+      glTexCoord2f(1,1);
+      glVertex3f(-1,0,1.5);       
+   
+      glTexCoord2f(0,1);
+      glVertex3f(-2.1,0,1.5);       
+   
+           /* roof front 2 */
+      glNormal3f(0.0,-0.447,0.89442);
+      glTexCoord2f(0,0);
+      glVertex3f(-1.1,-1.2,1.9);       
+   
+      glTexCoord2f(1,0);
+      glVertex3f(0.1,-1.2,1.9);       
+   
+      glTexCoord2f(1,1);
+      glVertex3f(0.1,0,2.5);       
+   
+      glTexCoord2f(0,1);
+      glVertex3f(-1.1,0,2.5);       
+   
+           /* roof front 3 */
+      glNormal3f(0.0,-0.447,0.89442);
+      glTexCoord2f(0,0);
+      glVertex3f(0.9,-1.2,0.9);       
+   
+      glTexCoord2f(1,0);
+      glVertex3f(2.1,-1.2,0.9);       
+   
+      glTexCoord2f(1,1);
+      glVertex3f(2.1,0,1.5);       
+   
+      glTexCoord2f(0,1);
+      glVertex3f(0.9,0,1.5);       
+   
+           /* roof back 1 */
+      glNormal3f(0.0,0.447,0.89442);
+      glTexCoord2f(0,0);
+      glVertex3f(-2.1,1.2,0.9);       
+   
+      glTexCoord2f(1,0);
+      glVertex3f(-1,1.2,0.9);       
+   
+      glTexCoord2f(1,1);
+      glVertex3f(-1,0,1.5);       
+   
+      glTexCoord2f(0,1);
+      glVertex3f(-2.1,0,1.5);       
+   
+           /* roof back 2 */
+      glNormal3f(0.0,0.447,0.89442);
+      glTexCoord2f(0,0);
+      glVertex3f(-1.1,1.2,1.9);       
+   
+      glTexCoord2f(1,0);
+      glVertex3f(0.1,1.2,1.9);       
+   
+      glTexCoord2f(1,1);
+      glVertex3f(0.1,0,2.5);       
+   
+      glTexCoord2f(0,1);
+      glVertex3f(-1.1,0,2.5);       
+   
+           /* roof back 3 */
+      glNormal3f(0.0,0.447,0.89442);
+      glTexCoord2f(0,0);
+      glVertex3f(0.9,1.2,0.9);       
+   
+      glTexCoord2f(1,0);
+      glVertex3f(2.1,1.2,0.9);       
+   
+      glTexCoord2f(1,1);
+      glVertex3f(2.1,0,1.5);       
+   
+      glTexCoord2f(0,1);
+      glVertex3f(0.9,0,1.5);       
+   
+   glEnd();
+   
    glDisable(GL_TEXTURE_2D);
    
    glEndList();

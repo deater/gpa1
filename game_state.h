@@ -1,4 +1,10 @@
 typedef struct {
+       /* non-saved state */
+    int xsize,ysize,use_lighting;
+   
+       /* saved state */   
+    int health,health_total;
+    int money;
     float direction,pigx,pigy,pigz;
     int gridx,gridy;
     int spaceship_active,in_spaceship;
