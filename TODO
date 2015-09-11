@@ -5,3 +5,5 @@
 + Better collision detection for world-map.
   [Can walk on beach, not get stuck on corners, take into account 
    height of terrain, etc]
+
++ convert to EGL?
