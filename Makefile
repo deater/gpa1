@@ -5,7 +5,7 @@ C_FLAGS = -Wall -O2
 # for Linux
 #
 
-L_FLAGS = -L/usr/X11R6/lib -lGL -lGLU -lX11 -lm -lICE -lXmu -lSDL 
+L_FLAGS = -L/usr/X11R6/lib -lGL -lGLU -lX11 -lm -lSDL
 
 #
 # for windows with Cygwin32 and SDL installed
