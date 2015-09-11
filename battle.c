@@ -46,45 +46,38 @@ typedef struct {
 
 #define YOU_ATTACK 0
 #define IT_ATTACKS 1
- 
-
-
-    
 
 int do_battle(game_state_type *gs) {
 
-    message_type message;
-    message_type damage;
-   
-    int opening_pan=1,pan_timer=0,game_state=0;
-   
-    int frames=0,fps_msecs=0,old_fps_msecs=0,keyspressed=0;
-    int old_msecs=0,current_msecs=0;
-    int position=0,update_bottom_bar=1;
+	message_type message;
+	message_type damage;
 
-    int enemy_attacking=0,enemy_attack_count=0;
-   
-    int attacking=0,running=0,defending=0,run_count=0;
-    int attack_count=0;
-   
-    float scale=0.0;
+	int opening_pan=1,pan_timer=0,game_state=0;
 
-    float pig_x=-5,pig_y=0,pig_z=0.5,enemy_x=5,enemy_y=0,enemy_z=2;
-   
-    char key_alpha,temp_string[40];
-    
-    float camerax=-10.0,cameray=0,cameraz=5.0;
+	int frames=0,fps_msecs=0,old_fps_msecs=0,keyspressed=0;
+	int old_msecs=0,current_msecs=0;
+	int position=0,update_bottom_bar=1;
 
-    int enemy_hp=500,enemy_hp_total=500;
-   
-    GLfloat light_position[]={5.0,5.0,100.0,0.0
-    };
+	int enemy_attacking=0,enemy_attack_count=0;
 
-    GLfloat white_light[]={1.0,1.0,1.0,1.0
-    };
-   
-    GLfloat lmodel_ambient[]={0.9,0.9,0.9,1.0
-    };
+	int attacking=0,running=0,defending=0,run_count=0;
+	int attack_count=0;
+
+	float scale=0.0;
+
+	float pig_x=-5,pig_y=0,pig_z=0.5;
+
+	float enemy_x=5,enemy_y=0,enemy_z=2;
+	int enemy_hp=500;
+//	int enemy_hp_total=500;
+
+	char key_alpha,temp_string[40];
+
+	float camerax=-10.0,cameray=0,cameraz=5.0;
+
+	GLfloat light_position[]={5.0,5.0,100.0,0.0};
+	GLfloat white_light[]={1.0,1.0,1.0,1.0};
+	GLfloat lmodel_ambient[]={0.9,0.9,0.9,1.0};
        /* Init screen and keyboard */
     reshape(gs->xsize,gs->ysize);
     check_keyboard(&key_alpha,1);
@@ -544,5 +537,9 @@ int do_battle(game_state_type *gs) {
 /* Emulate low frame-rates */
 //usleep(100000); 
     }
-    return 1;
+
+	(void)defending;
+	(void)enemy_attacking;
+	(void)enemy_attack_count;
+	return 1;
 }
