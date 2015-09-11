@@ -18,37 +18,22 @@
 
 #include "game_state.h"
 
-  
 #define PI 3.141592653589793238462643383279502884197169399
-
 
 extern int use_lighting;
 extern int show_fps;
 
-
-
-
-       
-       
-
-
 int do_credits(game_state_type *gs) {
 
-    unsigned char key_alpha;
-    int frames=0,new_msecs,old_msecs,fps_msecs,old_fps_msecs=0;
+    char key_alpha;
+    int frames=0,new_msecs,old_msecs,fps_msecs=0,old_fps_msecs=0;
     int keyspressed;
     float scale,camerax=10,cameray=-10,cameraz=10,camera_direction=0;
     int right_elbow=0;
-   
-     GLfloat light_position[]={5.0,5.0,100.0,0.0
-     };
-   
-       GLfloat lmodel_ambient[]={0.9,0.9,0.9,1.0
-       };
-   
-   
-       GLfloat white_light[]={1.0,1.0,1.0,1.0
-       };
+
+	GLfloat light_position[]={5.0,5.0,100.0,0.0};
+	GLfloat lmodel_ambient[]={0.9,0.9,0.9,1.0};
+	GLfloat white_light[]={1.0,1.0,1.0,1.0};
 
 
     printf("ENTERING DO CREDITS\n"); fflush(stdout);
@@ -189,5 +174,6 @@ int do_credits(game_state_type *gs) {
 /* Emulate low frame-rates */
 //usleep(100000); 
     }
-    return 1;
+	(void) scale;
+    	return 1;
 }
