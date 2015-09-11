@@ -1,12 +1,20 @@
 Guinea Pig Adventure 1
-http://www.deater.net/vmwprod/gp1/
+http://www.deater.net/weave/vmwprod/gp1/
 
 by Vince Weaver
 vince@deater.net
 
 Background
 ~~~~~~~~~~
-A rpg adventure game written as an exercise in learning OpenGL.
+A simple rpg adventure game engine that is fairly incomplete.
+
+Originall written in the summer of 2001 while I was unemployed.
+I was using it as an excuse to learn OpenGL using the RedBook and
+my 3dfx banshee on a K6-2 machine.
+
+You can see the ff7 influences (had just played through for the first
+time) and can probably guess my favorite part of that game was always
+flying the highwind around low over the ocean.
 
 Instructions
 ~~~~~~~~~~~~
@@ -49,3 +57,4 @@ Command Line Options
 
 Vince Weaver
 vince@deater.net
+11 September 2015
