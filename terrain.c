@@ -71,43 +71,40 @@ float terrain_heights[]={
 };
 
 
-void init_hline(x1,x2,y, terrain, rotation, region) {
- 
-   int x;
-   
-   for(x=x1;x<=x2;x++) {
-      world_map[x][y].terrain_type=terrain;
-      world_map[x][y].rotation=rotation;
-      world_map[x][y].region_name=region_names[region];
-      world_map[x][y].objects=NULL;
-   }
-   
+void init_hline(int x1, int x2, int y,
+		int terrain, int rotation, int region) {
+
+	int x;
+
+	for(x=x1;x<=x2;x++) {
+		world_map[x][y].terrain_type=terrain;
+		world_map[x][y].rotation=rotation;
+		world_map[x][y].region_name=region_names[region];
+		world_map[x][y].objects=NULL;
+	}
 }
 
 
-void init_vline(y1,y2,x, terrain, rotation, region) {
- 
-   int y;
-   
-   for(y=y1;y<=y2;y++) {
-      world_map[x][y].terrain_type=terrain;
-      world_map[x][y].rotation=rotation;
-      world_map[x][y].region_name=region_names[region];
-      world_map[x][y].objects=NULL;
-   }
-   
+void init_vline(int y1, int y2, int x,
+		int terrain, int rotation, int region) {
+
+	int y;
+
+	for(y=y1;y<=y2;y++) {
+		world_map[x][y].terrain_type=terrain;
+		world_map[x][y].rotation=rotation;
+		world_map[x][y].region_name=region_names[region];
+		world_map[x][y].objects=NULL;
+	}
 }
 
-void init_point(x,y, terrain, rotation, region) {
- 
-  
-      world_map[x][y].terrain_type=terrain;
+void init_point(int x, int y,
+		int terrain, int rotation, int region) {
 
-   world_map[x][y].rotation=rotation;
-      world_map[x][y].region_name=region_names[region];
-      world_map[x][y].objects=NULL;
-  
-   
+	world_map[x][y].terrain_type=terrain;
+	world_map[x][y].rotation=rotation;
+	world_map[x][y].region_name=region_names[region];
+	world_map[x][y].objects=NULL;
 }
 
 void setup_map(void) {

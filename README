@@ -5,6 +5,13 @@ https://github.com/deater/gpa1
 by Vince Weaver
 vince@deater.net
 
+Installing
+~~~~~~~~~~
+You'll need SDL 1.2 installed.
+
+On debian that means you will need to do
+	apt-get install libsdl1.2-dev
+
 Background
 ~~~~~~~~~~
 A simple rpg adventure game engine that is fairly incomplete.
@@ -54,6 +61,8 @@ Other buttons:
 Command Line Options
 ~~~~~~~~~~~~~~~~~~~~
 --halfsize   runs in 320x200 mode
+
+
 
 
 Vince Weaver
