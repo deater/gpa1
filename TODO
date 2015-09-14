@@ -7,3 +7,13 @@
    height of terrain, etc]
 
 + convert to EGL?
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
++ Get game in playable shape
++ Enemies: killer crabs?  Metrocat?
++ Have a clock keep track of local time.
+	Have it be night appropriately.
+	Can sleep to bring time around, also restore health up to 75%
+
