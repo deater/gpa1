@@ -1,11 +1,11 @@
 CC = gcc
-C_FLAGS = -Wall -O2
 
 #
 # for Linux
 #
 
-L_FLAGS = -L/usr/X11R6/lib -lGL -lGLU -lX11 -lm -lSDL
+C_FLAGS = -Wall -O2 `sdl-config --cflags`
+L_FLAGS = `sdl-config --libs` -lGL -lGLU -lm
 
 #
 # for windows with Cygwin32 and SDL installed
