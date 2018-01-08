@@ -334,7 +334,7 @@ void render_world(game_state_type *gs) {
 //		glScalef(0.75,0.75,0.75);
 //		glTranslatef(2,2,5.75);
 //		glRotatef(90,0,1,0);
-//		             
+//
 //		   draw_tfv(0,0,0,0,
 //			    0,315,0,
 //			    0,0,0,

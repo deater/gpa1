@@ -15,40 +15,41 @@
 #define TFV_SWORD        7
 #define TFV_SIDEBURNS    8
 
-GLuint tfv_parts[12];
-GLuint tfe_parts[12];
+static GLuint tfv_parts[12];
+static GLuint tfe_parts[12];
 
 
-int make_rectangle(float x, float y, float z, int text1, int text2, int text3,
-		                              int text4, int text5, int text6) {
-   
-       /* left end */
-    glBindTexture(GL_TEXTURE_2D,textures[text1]);
-    glBegin(GL_QUADS);
-       glNormal3f(-1,0,0);
-       glTexCoord2f(0,0);
-       glVertex3f(0,y/2,-z/2);
-   
-       glTexCoord2f(1,0);
-       glVertex3f(0,-y/2,-z/2);
-   
-       glTexCoord2f(1,1);
-       glVertex3f(0,-y/2,z/2);
-   
-       glTexCoord2f(0,1);
-       glVertex3f(0,y/2,z/2);
-    glEnd();
-   
-          /* front */
-    glBindTexture(GL_TEXTURE_2D,textures[text2]);
-    glBegin(GL_QUADS);
-       glNormal3f(0,-1,0);
-       glTexCoord2f(0,0);
-       glVertex3f(0,-y/2,-z/2);
-   
-       glTexCoord2f(1,0);
-       glVertex3f(x,-y/2,-z/2);
-   
+static int make_rectangle(float x, float y, float z,
+			int text1, int text2, int text3,
+			int text4, int text5, int text6) {
+
+	/* left end */
+	glBindTexture(GL_TEXTURE_2D,textures[text1]);
+	glBegin(GL_QUADS);
+		glNormal3f(-1,0,0);
+		glTexCoord2f(0,0);
+		glVertex3f(0,y/2,-z/2);
+
+		glTexCoord2f(1,0);
+		glVertex3f(0,-y/2,-z/2);
+
+		glTexCoord2f(1,1);
+		glVertex3f(0,-y/2,z/2);
+
+		glTexCoord2f(0,1);
+		glVertex3f(0,y/2,z/2);
+	glEnd();
+
+	/* front */
+	glBindTexture(GL_TEXTURE_2D,textures[text2]);
+	glBegin(GL_QUADS);
+		glNormal3f(0,-1,0);
+		glTexCoord2f(0,0);
+		glVertex3f(0,-y/2,-z/2);
+
+		glTexCoord2f(1,0);
+		glVertex3f(x,-y/2,-z/2);
+
        glTexCoord2f(1,1);
        glVertex3f(x,-y/2,z/2);
    
@@ -644,7 +645,7 @@ int setup_tfe(void) {
    glEndList();
 
        /* TORSO */
-#define BREAST_SIZE 0.2  /* Oh, I hope no one ever reads this source code */
+#define CHEST_SIZE 0.2  /* Oh, I hope no one ever reads this source code */
    
    tfe_parts[TFV_TORSO]=glGenLists(1);
    glNewList(tfe_parts[TFV_TORSO],GL_COMPILE);
@@ -655,8 +656,8 @@ int setup_tfe(void) {
        /* chest */
    glBegin(GL_QUADS);
 
-	    calculate_normal(0.5,-0.5,0.25+BREAST_SIZE,
-			     0.5,0.5,0.25+BREAST_SIZE,
+	    calculate_normal(0.5,-0.5,0.25+CHEST_SIZE,
+			     0.5,0.5,0.25+CHEST_SIZE,
 			     0,-0.5,0.25,
 			     &normalx,&normaly,&normalz);
 	 glNormal3f(normalx,normaly,normalz);
@@ -664,9 +665,9 @@ int setup_tfe(void) {
    
    
        glTexCoord2f(0,0);
-       glVertex3f(0.5,-0.5,0.25+BREAST_SIZE);
+       glVertex3f(0.5,-0.5,0.25+CHEST_SIZE);
        glTexCoord2f(1,0);
-       glVertex3f(0.5,0.5,0.25+BREAST_SIZE);
+       glVertex3f(0.5,0.5,0.25+CHEST_SIZE);
        glTexCoord2f(1,1);
        glVertex3f(0,0.5,0.25);
        glTexCoord2f(0,1);
@@ -675,7 +676,7 @@ int setup_tfe(void) {
    
    	    calculate_normal(0.75,-0.5,0.25,
 			     0.75,0.5,0.25,
-			     0.5,-0.5,0.25+BREAST_SIZE,
+			     0.5,-0.5,0.25+CHEST_SIZE,
 			     &normalx,&normaly,&normalz);
 	 glNormal3f(normalx,normaly,normalz);
    
@@ -684,9 +685,9 @@ int setup_tfe(void) {
        glTexCoord2f(1,0);
        glVertex3f(0.75,0.5,0.25);
        glTexCoord2f(1,1);
-       glVertex3f(0.5,0.5,0.25+BREAST_SIZE);
+       glVertex3f(0.5,0.5,0.25+CHEST_SIZE);
        glTexCoord2f(0,1);
-       glVertex3f(0.5,-0.5,0.25+BREAST_SIZE);
+       glVertex3f(0.5,-0.5,0.25+CHEST_SIZE);
    
    glEnd();
    
@@ -697,7 +698,7 @@ int setup_tfe(void) {
       glTexCoord2f(0,1);
       glVertex3f(0.75,-0.5,0.25);
       glTexCoord2f(0.25,1);
-      glVertex3f(0.5,-0.5,0.25+BREAST_SIZE);
+      glVertex3f(0.5,-0.5,0.25+CHEST_SIZE);
    
       glNormal3f(0,1,0);
       glTexCoord2f(0,0);
@@ -705,7 +706,7 @@ int setup_tfe(void) {
       glTexCoord2f(0,1);
       glVertex3f(0.75,0.5,0.25);
       glTexCoord2f(0.25,1);
-      glVertex3f(0.5,0.5,0.25+BREAST_SIZE);
+      glVertex3f(0.5,0.5,0.25+CHEST_SIZE);
       
    
    
@@ -868,13 +869,13 @@ void draw_tfv(int head_twist,int waist_twist,int left_arm_angle,int left_elbow_a
 	      int left_knee_angle,int right_leg_angle,int right_knee_angle,
 	      int show_sword,int whom) {
 
-   GLuint *parts;
-   
-   if (whom) parts=tfe_parts;
-   else parts=tfv_parts;
-   
-   glPushMatrix();
-          /* head */   
+	GLuint *parts;
+
+	if (whom) parts=tfe_parts;
+	else parts=tfv_parts;
+
+	glPushMatrix();
+          /* head */
       glCallList(parts[TFV_HEAD]);
 
       glTranslatef(1.25,0,0);

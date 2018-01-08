@@ -149,16 +149,30 @@ int do_credits(game_state_type *gs) {
    glEnable(GL_TEXTURE_2D);
 
    glPushMatrix();
-    
+
    glTranslatef(0,0,6.5);
    glRotatef(90,0,1,0);
-       
+
    draw_tfv(0,0,0,0,
 	    0,right_elbow,0,
 	    0,0,0,
 	    0,
 	    1);
-       
+
+   draw_tfv(0,0,0,0,
+	    0,right_elbow,0,
+	    0,0,0,
+	    0,
+	    1);
+
+   glTranslatef(0,2.5,0);
+
+   draw_tfv(0,0,0,0,
+	    0,right_elbow,0,
+	    0,0,0,
+	    0,
+	    0);
+
    glPopMatrix();
 
        
